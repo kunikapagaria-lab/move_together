@@ -47,8 +47,8 @@ export const TopNav = () => {
 
   return (
     <>
-      <nav className="fixed top-0 w-full bg-black z-50">
-      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between relative">
+      <nav className="w-full bg-black py-4 mb-2">
+      <div className="max-w-7xl mx-auto px-4 flex items-center justify-between relative">
         
         {/* Brand */}
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/home')}>

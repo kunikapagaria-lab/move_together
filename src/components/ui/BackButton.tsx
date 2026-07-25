@@ -7,10 +7,11 @@ export const BackButton = () => {
   return (
     <button 
       onClick={() => navigate(-1)}
-      className="absolute top-24 left-4 sm:left-8 z-40 bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur-md rounded-full p-2 text-white/70 hover:text-white transition-all group"
+      className="inline-flex items-center gap-2 mb-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full px-3 py-1.5 text-xs font-bold text-white transition-all group cursor-pointer"
       aria-label="Go Back"
     >
-      <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+      <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+      <span>Back</span>
     </button>
   );
 };
