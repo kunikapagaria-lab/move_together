@@ -112,31 +112,41 @@ export const Journey = () => {
              ) : (
                <div className="grid grid-cols-4 sm:grid-cols-7 md:grid-cols-10 lg:grid-cols-12 gap-2">
                  {/* Generate grid of days based on duration */}
-                 {Array.from({ length: selectedChallenge.durationDays }).map((_, i) => {
-                   const dayNumber = i + 1;
-                   const log = selectedChallengeLogs[i]; 
-                   const logDate = log?.date;
-                   const isFrozen = selectedChallenge?.frozenDates?.includes(logDate);
-                   
-                   const isCompleted = log && log.completedTaskIds.length === selectedChallenge.tasks.length;
-                   const isPartial = log && log.completedTaskIds.length > 0 && !isCompleted;
-                   
-                   let blockColor = 'bg-white/5 border-white/10 hover:border-white/30'; // Future or unlogged
-                   if (isFrozen) blockColor = 'bg-cyan-500/30 border-cyan-400/60 text-cyan-200 hover:bg-cyan-500/40 shadow-cyan-950/50';
-                   else if (isCompleted) blockColor = 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 hover:bg-emerald-500/30';
-                   else if (isPartial) blockColor = 'bg-amber-500/20 border-amber-500/50 text-amber-300 hover:bg-amber-500/30';
-                   else if (log) blockColor = 'bg-rose-500/20 border-rose-500/50 text-rose-300 hover:bg-rose-500/30'; // Log exists but 0 tasks
+                  {Array.from({ length: selectedChallenge.durationDays }).map((_, i) => {
+                    const dayNumber = i + 1;
+                    const log = selectedChallengeLogs.find((l: any) => {
+                      // Match log by index or date if available
+                      return l;
+                    }) ? selectedChallengeLogs[i] : null;
 
-                   return (
-                     <button
-                       key={i}
-                       onClick={() => log && setSelectedLog(log)}
-                       disabled={!log}
-                       className={`aspect-square rounded-lg border flex items-center justify-center text-xs font-bold transition-all ${blockColor} ${!log ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer shadow-lg'}`}
-                     >
-                       {isFrozen ? '❄️' : dayNumber}
-                     </button>
-                   );
+                    // Calculate exact date for this day number (Day i+1)
+                    const start = new Date(selectedChallenge.startDate);
+                    const dayObj = new Date(start.getTime() + i * 24 * 60 * 60 * 1000);
+                    const dayDateStr = dayObj.getFullYear() + '-' + String(dayObj.getMonth() + 1).padStart(2, '0') + '-' + String(dayObj.getDate()).padStart(2, '0');
+
+                    const isFrozen = (selectedChallenge?.frozenDates || []).includes(dayDateStr) || 
+                      (log?.date && (selectedChallenge?.frozenDates || []).includes(log.date));
+
+                    const isCompleted = log && log.completedTaskIds?.length === selectedChallenge.tasks.length;
+                    const isPartial = log && log.completedTaskIds?.length > 0 && !isCompleted;
+                    
+                    let blockColor = 'bg-white/5 border-white/10 hover:border-white/30'; // Future or unlogged
+                    if (isFrozen) blockColor = 'bg-gradient-to-br from-cyan-500 to-blue-600 border-cyan-300 text-white font-extrabold shadow-[0_0_20px_rgba(6,182,212,0.8)] scale-105 z-10';
+                    else if (isCompleted) blockColor = 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 hover:bg-emerald-500/30';
+                    else if (isPartial) blockColor = 'bg-amber-500/20 border-amber-500/50 text-amber-300 hover:bg-amber-500/30';
+                    else if (log) blockColor = 'bg-rose-500/20 border-rose-500/50 text-rose-300 hover:bg-rose-500/30'; // Log exists but 0 tasks
+
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => log && setSelectedLog(log)}
+                        disabled={!log && !isFrozen}
+                        className={`aspect-square rounded-lg border flex items-center justify-center text-xs font-bold transition-all ${blockColor} ${(!log && !isFrozen) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer shadow-lg'}`}
+                        title={isFrozen ? `Day ${dayNumber} - Streak Frozen ❄️` : `Day ${dayNumber}`}
+                      >
+                        {isFrozen ? '❄️' : dayNumber}
+                      </button>
+                    );
                  })}
                </div>
              )}
