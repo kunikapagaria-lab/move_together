@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply text-textMain antialiased selection:bg-primary selection:text-white bg-black;
+  }
+}
