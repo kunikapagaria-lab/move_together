@@ -7,14 +7,17 @@ import App from './App';
 import './index.css';
 
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
+import { ToastProvider } from './components/ui/Toast';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <ErrorBoundary>
       <Provider store={store}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
+        <ToastProvider>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </ToastProvider>
       </Provider>
     </ErrorBoundary>
   </React.StrictMode>,

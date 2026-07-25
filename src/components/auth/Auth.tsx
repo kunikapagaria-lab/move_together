@@ -4,6 +4,8 @@ import type { RootState } from '../../store';
 import { loginStart, loginSuccess, loginFailure } from '../../store/authSlice';
 import { Flame } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../../services/api';
+import { useToast } from '../ui/Toast';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -13,32 +15,28 @@ const Auth = () => {
   
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isLoading, isError, message } = useSelector((state: RootState) => state.auth);
+  const { showError, showSuccess } = useToast();
+  const { isLoading } = useSelector((state: RootState) => state.auth);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     dispatch(loginStart());
-    
-    const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-    const body = isLogin ? { email, password } : { email, password, displayName };
 
     try {
-      const response = await fetch(`http://localhost:5000${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Something went wrong');
+      let data;
+      if (isLogin) {
+        data = await api.login({ email, password });
+      } else {
+        data = await api.register({ email, password, displayName });
       }
 
       dispatch(loginSuccess(data));
-      navigate('/dashboard'); // Go to dashboard on success
+      showSuccess(isLogin ? 'Welcome back!' : 'Account created successfully!');
+      navigate('/dashboard');
     } catch (err: any) {
-      dispatch(loginFailure(err.message));
+      const errorMsg = err.message || 'Authentication failed. Please check your credentials.';
+      dispatch(loginFailure(errorMsg));
+      showError(errorMsg);
     }
   };
 
@@ -66,12 +64,6 @@ const Auth = () => {
           <p className="text-sm text-white/50 mb-8">
             {isLogin ? 'Enter your details to continue' : 'Create an account to track your progress'}
           </p>
-
-          {isError && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs py-2 px-3 rounded-xl mb-6">
-              {message}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
