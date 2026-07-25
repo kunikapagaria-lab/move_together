@@ -43,9 +43,12 @@ import { useNavigate } from 'react-router-dom';
 import { freezeToday } from '../../store/challengeSlice';
 import { useToast } from '../../components/ui/Toast';
 
+import { ConfirmModal } from '../../components/ui/ConfirmModal';
+
 export const Dashboard = () => {
   const [showTip, setShowTip] = useState(true);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
+  const [isFreezeModalOpen, setIsFreezeModalOpen] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { showError, showSuccess } = useToast();
@@ -76,20 +79,22 @@ export const Dashboard = () => {
     showSuccess('Journal reflection saved!');
   };
 
-  const handleFreezeToday = async () => {
+  const handleFreezeClick = () => {
     if (isTodayFrozen) {
       return showSuccess('Today is already protected by Streak Freeze! ❄️');
     }
     if (freezesLeft <= 0) {
       return showError('No freeze days remaining for this challenge!');
     }
-    if (window.confirm(`Activate Streak Freeze for today? You have ${freezesLeft}/5 freezes left.`)) {
-      try {
-        await dispatch(freezeToday()).unwrap();
-        showSuccess('Today is now frozen! ❄️ Your streak is safe from midnight reset.');
-      } catch (err: any) {
-        showError(typeof err === 'string' ? err : err?.message || 'Failed to apply streak freeze.');
-      }
+    setIsFreezeModalOpen(true);
+  };
+
+  const executeFreeze = async () => {
+    try {
+      await dispatch(freezeToday()).unwrap();
+      showSuccess('Today is now frozen! ❄️ Your streak is safe from midnight reset.');
+    } catch (err: any) {
+      showError(typeof err === 'string' ? err : err?.message || 'Failed to apply streak freeze.');
     }
   };
 
@@ -196,7 +201,7 @@ export const Dashboard = () => {
 
             <div className="flex items-center gap-2">
               <button
-                onClick={handleFreezeToday}
+                onClick={handleFreezeClick}
                 className={`border font-bold text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all shadow-md ${
                   isTodayFrozen 
                     ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400/50 shadow-cyan-950/50' 
@@ -244,6 +249,18 @@ export const Dashboard = () => {
       <WearableSyncModal 
         isOpen={isSyncModalOpen} 
         onClose={() => setIsSyncModalOpen(false)} 
+      />
+
+      {/* Streak Freeze Confirmation Modal */}
+      <ConfirmModal 
+        isOpen={isFreezeModalOpen}
+        onClose={() => setIsFreezeModalOpen(false)}
+        onConfirm={executeFreeze}
+        title="Activate Streak Freeze?"
+        message={`Freezing today will protect your streak from midnight reset even if you rest or miss tasks. You have ${freezesLeft}/5 freezes left.`}
+        confirmText="Freeze Today ❄️"
+        cancelText="Not Now"
+        type="freeze"
       />
     </>
   );

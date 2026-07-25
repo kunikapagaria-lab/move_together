@@ -12,6 +12,7 @@ import type { ChallengePreset } from '../../data/presetTemplates';
 import { getAthleteRank, getNextRankProgress } from '../../utils/athleteRanks';
 import { WearableSyncModal } from '../integrations/WearableSyncModal';
 import { AthleteRanksModal } from '../ranks/AthleteRanksModal';
+import { ConfirmModal } from '../../components/ui/ConfirmModal';
 
 const QUOTES = [
   "Discipline is choosing between what you want now and what you want most.",
@@ -52,9 +53,10 @@ export const Home = () => {
   const [invitedFriendIds, setInvitedFriendIds] = useState<string[]>([]);
   const [selectedPresetId, setSelectedPresetId] = useState<string>('grit-75');
 
-  // Sync & Rank Modal State
+  // Sync, Rank & Cancel Modal State
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [isRankModalOpen, setIsRankModalOpen] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
 
   const rank = getAthleteRank(streak);
   const rankProgress = getNextRankProgress(streak);
@@ -88,10 +90,13 @@ export const Home = () => {
     }
   };
 
-  const handleCancel = () => {
-    if (window.confirm('Are you sure you want to cancel this challenge? You will lose all progress and start over.')) {
-      dispatch(cancelChallenge());
-    }
+  const handleCancelClick = () => {
+    setIsCancelModalOpen(true);
+  };
+
+  const executeCancel = () => {
+    dispatch(cancelChallenge());
+    setIsCancelModalOpen(false);
   };
 
   const handleAddTask = (e: React.FormEvent) => {
@@ -470,7 +475,7 @@ export const Home = () => {
 
       {/* Danger Zone */}
       <div className="mt-8 pt-8 border-t border-white/10 w-full">
-         <button onClick={handleCancel} className="flex items-center justify-center gap-2 text-rose-500 hover:text-rose-400 mx-auto text-sm font-bold uppercase tracking-widest transition-colors">
+         <button onClick={handleCancelClick} className="flex items-center justify-center gap-2 text-rose-500 hover:text-rose-400 mx-auto text-sm font-bold uppercase tracking-widest transition-colors">
            <XCircle className="h-4 w-4" /> Cancel Challenge
          </button>
       </div>
@@ -487,6 +492,16 @@ export const Home = () => {
         currentStreak={streak} 
       />
 
+      <ConfirmModal 
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        onConfirm={executeCancel}
+        title="Cancel Active Challenge?"
+        message="Are you sure you want to cancel your current challenge? You will lose all active streak progress."
+        confirmText="Cancel Challenge"
+        cancelText="Keep Going"
+        type="danger"
+      />
     </div>
   );
 };
