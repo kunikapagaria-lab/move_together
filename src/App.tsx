@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Auth from './components/auth/Auth';
@@ -12,18 +11,14 @@ import { Progress } from './features/progress/Progress';
 import { Achievements } from './features/progress/Achievements';
 import { Layout } from './components/layout/Layout';
 import { PageTransition } from './components/layout/PageTransition';
-import { DynamicBackground } from './components/layout/DynamicBackground';
 import { NotificationsModal } from './features/notifications/NotificationsModal';
-import { DynamicAtmosphere } from './components/effects/DynamicAtmosphere';
 
 function App() {
   const location = useLocation();
 
   return (
-    <DynamicAtmosphere>
-      <div className="min-h-screen text-textMain relative">
-        <DynamicBackground />
-        <NotificationsModal />
+    <div className="min-h-screen text-white bg-black relative">
+      <NotificationsModal />
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           
@@ -59,8 +54,7 @@ function App() {
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
       </AnimatePresence>
-      </div>
-    </DynamicAtmosphere>
+    </div>
   );
 }
 
