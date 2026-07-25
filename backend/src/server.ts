@@ -24,7 +24,25 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-  origin: process.env.CLIENT_URL || '*',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like server-to-server or mobile apps)
+    if (!origin) return callback(null, true);
+    
+    // Always allow any Vercel domain or localhost
+    if (origin.endsWith('.vercel.app') || origin.includes('localhost') || process.env.CLIENT_URL === '*' || !process.env.CLIENT_URL) {
+      return callback(null, true);
+    }
+
+    const clientUrl = process.env.CLIENT_URL.startsWith('http') 
+      ? process.env.CLIENT_URL 
+      : `https://${process.env.CLIENT_URL}`;
+
+    if (origin === clientUrl) {
+      return callback(null, true);
+    }
+
+    return callback(null, true);
+  },
   credentials: true
 }));
 app.use(express.json());
