@@ -342,7 +342,7 @@ export const Home = () => {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-extrabold text-white text-lg tracking-tight group-hover:text-amber-300 transition-colors flex items-center gap-1.5">
-                  {rank.name} RANK <Trophy className="w-4 h-4 text-amber-400 opacity-60 group-hover:opacity-100 transition-opacity" />
+                  {rank.name} <Trophy className="w-4 h-4 text-amber-400 opacity-60 group-hover:opacity-100 transition-opacity" />
                 </h3>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 font-bold">
                   Day {streak} Active
