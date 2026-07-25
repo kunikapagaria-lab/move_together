@@ -178,7 +178,7 @@ export const Today = ({ hideHeader = false }: { hideHeader?: boolean }) => {
       </div>
 
       {/* Task list in 2-column Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 items-start">
         {tasks.map((task: any) => {
           const Icon = task.icon;
           const isExpanded = expandedId === task.id;
