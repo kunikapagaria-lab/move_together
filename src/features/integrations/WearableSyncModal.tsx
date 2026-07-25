@@ -27,11 +27,14 @@ export const WearableSyncModal = ({ isOpen, onClose }: WearableSyncModalProps) =
   const [syncingId, setSyncingId] = useState<string | null>(null);
   const [syncedResult, setSyncedResult] = useState<{ appName: string; details: string; taskTitle: string } | null>(null);
 
+  const [syncError, setSyncError] = useState<string | null>(null);
+
   if (!isOpen) return null;
 
   const handleSync = async (app: typeof APPS[0]) => {
     setSyncingId(app.id);
     setSyncedResult(null);
+    setSyncError(null);
 
     try {
       // Execute REAL backend HTTP request to /api/integrations/sync
@@ -48,7 +51,7 @@ export const WearableSyncModal = ({ isOpen, onClose }: WearableSyncModalProps) =
       });
     } catch (err: any) {
       setSyncingId(null);
-      alert(err.message || 'Error syncing wearable data');
+      setSyncError(err.message || 'Error syncing wearable data');
     }
   };
 
@@ -128,6 +131,15 @@ export const WearableSyncModal = ({ isOpen, onClose }: WearableSyncModalProps) =
                 <p className="text-xs text-white/80 font-mono mt-1">{syncedResult.details}</p>
                 <p className="text-[10px] text-white/50 mt-1">Auto-completed task: <span className="text-emerald-400 font-bold">"{syncedResult.taskTitle}"</span></p>
               </div>
+            </motion.div>
+          )}
+          {syncError && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-rose-500/10 border border-rose-500/30 rounded-2xl p-4 flex items-start gap-3 mb-3 text-xs text-rose-300 font-bold"
+            >
+              <span>⚠️ {syncError}</span>
             </motion.div>
           )}
 

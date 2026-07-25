@@ -73,19 +73,22 @@ export const Home = () => {
     })));
   };
 
+  const [errorToast, setErrorToast] = useState<string | null>(null);
+
   const handleStart = async () => {
-    if (tasks.length === 0) return alert('Add at least one task!');
+    if (tasks.length === 0) return setErrorToast('Please add at least one task to your challenge!');
     try {
+      setErrorToast(null);
       await dispatch(startChallenge({ durationDays: duration, tasks, invitedFriendIds })).unwrap();
       await dispatch(fetchChallengeData());
       setShowSetup(false);
     } catch (err: any) {
-      alert(err || 'Failed to start challenge');
+      setErrorToast(typeof err === 'string' ? err : err?.message || 'Failed to start challenge. Please retry!');
     }
   };
 
   const handleCancel = () => {
-    if (confirm('Are you sure you want to cancel this challenge? You will lose all progress and start over.')) {
+    if (window.confirm('Are you sure you want to cancel this challenge? You will lose all progress and start over.')) {
       dispatch(cancelChallenge());
     }
   };
@@ -116,7 +119,18 @@ export const Home = () => {
   if (!activeChallenge) {
     if (!showSetup) {
       return (
-        <div className="w-full max-w-5xl mx-auto px-4 md:px-8 flex flex-col items-center pt-8 h-full overflow-y-auto scrollbar-none pb-12 text-center">
+        <div className="w-full max-w-5xl mx-auto px-4 md:px-8 flex flex-col items-center pt-8 h-full overflow-y-auto scrollbar-none pb-12 text-center relative">
+          {errorToast && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-rose-950/90 border border-rose-500/30 text-rose-200 px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl flex items-center gap-3 text-xs font-bold"
+            >
+              <span>⚠️ {errorToast}</span>
+              <button onClick={() => setErrorToast(null)} className="text-rose-400 hover:text-white p-1 ml-2 font-mono">✕</button>
+            </motion.div>
+          )}
           {/* Greeting */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -149,6 +163,17 @@ export const Home = () => {
 
     return (
       <>
+        {errorToast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-rose-950/90 border border-rose-500/30 text-rose-200 px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl flex items-center gap-3 text-xs font-bold"
+          >
+            <span>⚠️ {errorToast}</span>
+            <button onClick={() => setErrorToast(null)} className="text-rose-400 hover:text-white p-1 ml-2 font-mono">✕</button>
+          </motion.div>
+        )}
         <button 
           onClick={() => setShowSetup(false)}
           className="absolute top-24 left-4 sm:left-8 z-40 bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur-md rounded-full p-2 text-white/70 hover:text-white transition-all group"

@@ -11,209 +11,181 @@ const getHeaders = () => {
   };
 };
 
+const safeFetch = async (url: string, options: RequestInit = {}, retries = 2): Promise<any> => {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const res = await fetch(url, options);
+      if (!res.ok) {
+        let errorMsg = 'API Request Failed';
+        try {
+          const errData = await res.json();
+          errorMsg = errData.error || errData.message || errorMsg;
+        } catch (_) {}
+        throw new Error(errorMsg);
+      }
+      return await res.json();
+    } catch (err: any) {
+      if (i < retries && (err.name === 'TypeError' || err.message?.includes('fetch'))) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        continue;
+      }
+      if (err.name === 'TypeError' || err.message === 'Failed to fetch') {
+        throw new Error('Server is waking up on cloud host. Please wait 5 seconds and retry!');
+      }
+      throw err;
+    }
+  }
+};
+
 export const api = {
   // --- Auth ---
   register: async (data: any) => {
-    const res = await fetch(`${API_URL}/auth/register`, { method: 'POST', headers: getHeaders(), body: JSON.stringify(data) });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
+    return safeFetch(`${API_URL}/auth/register`, { method: 'POST', headers: getHeaders(), body: JSON.stringify(data) });
   },
   login: async (data: any) => {
-    const res = await fetch(`${API_URL}/auth/login`, { method: 'POST', headers: getHeaders(), body: JSON.stringify(data) });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
+    return safeFetch(`${API_URL}/auth/login`, { method: 'POST', headers: getHeaders(), body: JSON.stringify(data) });
   },
 
   // --- Challenges ---
   getActiveChallenge: async () => {
-    const res = await fetch(`${API_URL}/challenges/active`, { headers: getHeaders() });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
+    return safeFetch(`${API_URL}/challenges/active`, { headers: getHeaders() });
   },
   startChallenge: async (durationDays: number, tasks: any[], invitedFriendIds?: string[]) => {
-    const res = await fetch(`${API_URL}/challenges/start`, {
+    return safeFetch(`${API_URL}/challenges/start`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ durationDays, tasks, invitedFriendIds })
     });
-    if (!res.ok) throw new Error((await res.json()).error || 'Failed to start challenge');
-    return res.json();
   },
   cancelChallenge: async () => {
-    const res = await fetch(`${API_URL}/challenges/cancel`, {
+    return safeFetch(`${API_URL}/challenges/cancel`, {
       method: 'POST',
       headers: getHeaders()
     });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
   },
   getAllChallenges: async () => {
-    const res = await fetch(`${API_URL}/challenges/all`, { headers: getHeaders() });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
+    return safeFetch(`${API_URL}/challenges/all`, { headers: getHeaders() });
   },
 
   // --- Logs ---
   getTodayLog: async (challengeId: string) => {
-    const res = await fetch(`${API_URL}/logs/today/${challengeId}`, { headers: getHeaders() });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
+    return safeFetch(`${API_URL}/logs/today/${challengeId}`, { headers: getHeaders() });
   },
   toggleTask: async (challengeId: string, taskId: string, isCompleted: boolean) => {
-    const res = await fetch(`${API_URL}/logs/toggle-task`, {
+    return safeFetch(`${API_URL}/logs/toggle-task`, {
       method: 'PUT',
       headers: getHeaders(),
       body: JSON.stringify({ challengeId, taskId, isCompleted })
     });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
   },
   updateJournal: async (challengeId: string, journalEntry: string) => {
-    const res = await fetch(`${API_URL}/logs/journal`, {
+    return safeFetch(`${API_URL}/logs/journal`, {
       method: 'PUT',
       headers: getHeaders(),
       body: JSON.stringify({ challengeId, journalEntry })
     });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
   },
   getStreak: async (challengeId: string) => {
-    const res = await fetch(`${API_URL}/logs/streak/${challengeId}`, { headers: getHeaders() });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
+    return safeFetch(`${API_URL}/logs/streak/${challengeId}`, { headers: getHeaders() });
   },
 
   // --- AI Coach ---
   getCoachInsight: async (userId: string) => {
-    const res = await fetch(`${API_URL}/coach/insight`, {
+    return safeFetch(`${API_URL}/coach/insight`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ userId })
     });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
   },
 
   // --- History ---
   getHistory: async (challengeId: string) => {
-    const res = await fetch(`${API_URL}/logs/history/${challengeId}`, { headers: getHeaders() });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
+    return safeFetch(`${API_URL}/logs/history/${challengeId}`, { headers: getHeaders() });
   },
   getChallengeLogs: async (challengeId: string) => {
-    const res = await fetch(`${API_URL}/logs/challenge/${challengeId}/all`, { headers: getHeaders() });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
+    return safeFetch(`${API_URL}/logs/challenge/${challengeId}/all`, { headers: getHeaders() });
   },
 
   // --- Groups ---
   createGroup: async (name: string, challengeTemplateId: string) => {
-    const res = await fetch(`${API_URL}/groups/create`, {
+    return safeFetch(`${API_URL}/groups/create`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ name, challengeTemplateId })
     });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
   },
   joinGroup: async (joinCode: string) => {
-    const res = await fetch(`${API_URL}/groups/join`, {
+    return safeFetch(`${API_URL}/groups/join`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ joinCode })
     });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
   },
   getMyGroups: async () => {
-    const res = await fetch(`${API_URL}/groups/my-groups`, { headers: getHeaders() });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
+    return safeFetch(`${API_URL}/groups/my-groups`, { headers: getHeaders() });
   },
   getChallengeGroups: async () => {
-    const res = await fetch(`${API_URL}/challenges/groups`, { headers: getHeaders() });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
+    return safeFetch(`${API_URL}/challenges/groups`, { headers: getHeaders() });
   },
 
   // --- Friends ---
   searchUsers: async (query: string) => {
-    const res = await fetch(`${API_URL}/friends/search?q=${encodeURIComponent(query)}`, { headers: getHeaders() });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
+    return safeFetch(`${API_URL}/friends/search?q=${encodeURIComponent(query)}`, { headers: getHeaders() });
   },
   respondToFriendRequest: async (requestId: string, action: 'accept' | 'reject') => {
-    const res = await fetch(`${API_URL}/friends/requests/${requestId}`, {
+    return safeFetch(`${API_URL}/friends/requests/${requestId}`, {
       method: 'PUT',
       headers: getHeaders(),
       body: JSON.stringify({ action })
     });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
   },
 
   // --- Notifications ---
   getNotifications: async () => {
-    const res = await fetch(`${API_URL}/notifications`, { headers: getHeaders() });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
+    return safeFetch(`${API_URL}/notifications`, { headers: getHeaders() });
   },
   markNotificationRead: async (id: string) => {
-    const res = await fetch(`${API_URL}/notifications/${id}/read`, {
+    return safeFetch(`${API_URL}/notifications/${id}/read`, {
       method: 'PUT',
       headers: getHeaders()
     });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
   },
   respondToGroupInvite: async (id: string, action: 'accept' | 'decline') => {
-    const res = await fetch(`${API_URL}/notifications/${id}/respond`, {
+    return safeFetch(`${API_URL}/notifications/${id}/respond`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ action })
     });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
   },
   sendFriendRequest: async (recipientId: string) => {
-    const res = await fetch(`${API_URL}/friends/request`, {
+    return safeFetch(`${API_URL}/friends/request`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ recipientId })
     });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
   },
   acceptFriendRequest: async (requestId: string) => {
-    const res = await fetch(`${API_URL}/friends/accept/${requestId}`, {
+    return safeFetch(`${API_URL}/friends/accept/${requestId}`, {
       method: 'PUT',
       headers: getHeaders()
     });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
   },
   rejectFriendRequest: async (requestId: string) => {
-    const res = await fetch(`${API_URL}/friends/reject/${requestId}`, {
+    return safeFetch(`${API_URL}/friends/reject/${requestId}`, {
       method: 'PUT',
       headers: getHeaders()
     });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
   },
   getMyFriends: async () => {
-    const res = await fetch(`${API_URL}/friends/mine`, { headers: getHeaders() });
-    if (!res.ok) throw new Error((await res.json()).error || 'API Error');
-    return res.json();
+    return safeFetch(`${API_URL}/friends/mine`, { headers: getHeaders() });
   },
 
   // --- Wearables / Integrations ---
   syncWearableData: async (provider: string, distanceKm?: number) => {
-    const res = await fetch(`${API_URL}/integrations/sync`, {
+    return safeFetch(`${API_URL}/integrations/sync`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ provider, distanceKm })
     });
-    if (!res.ok) throw new Error((await res.json()).error || 'Sync Error');
-    return res.json();
   }
 };
