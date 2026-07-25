@@ -115,7 +115,7 @@ export const Dashboard = () => {
       <div className="flex flex-col lg:flex-row gap-6 items-start h-full min-h-0 flex-1">
         
         {/* LEFT COLUMN — Motivation & Journal */}
-        <div className="w-full lg:w-[45%] flex-shrink-0 flex flex-col gap-6 h-full pb-4">
+        <div className="w-full lg:w-[35%] flex-shrink-0 flex flex-col gap-6 h-full pb-4">
           
           {/* Motivation Quote */}
           <GlassCard className="p-8 flex flex-col items-center justify-center text-center flex-shrink-0 min-h-[160px]">
