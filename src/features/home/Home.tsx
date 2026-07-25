@@ -328,12 +328,12 @@ export const Home = () => {
         className="mb-8"
       >
         <div className="flex items-center justify-center gap-2 mb-5 flex-wrap">
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/10 backdrop-blur-xl px-4 py-1.5 rounded-full text-xs text-white/70">
-            <Sparkles className="h-3 w-3 text-violet-300" />
+          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-xl px-4 py-1.5 rounded-full text-xs text-white">
+            <Sparkles className="h-3 w-3 text-white" />
             Day {streak + 1} of {activeChallenge.durationDays}
           </div>
 
-          <div className="inline-flex items-center gap-1.5 bg-cyan-500/10 border border-cyan-500/30 backdrop-blur-xl px-3 py-1.5 rounded-full text-xs text-cyan-300 font-bold shadow-lg shadow-cyan-950/50">
+          <div className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 backdrop-blur-xl px-3 py-1.5 rounded-full text-xs text-white font-bold">
             ❄️ {(activeChallenge.freezeDaysAllowed || 5) - (activeChallenge.freezeDaysUsed || 0)}/5 Freezes Left
           </div>
         </div>
@@ -349,29 +349,29 @@ export const Home = () => {
       {/* Athlete Rank Progress Card */}
       <div 
         onClick={() => setIsRankModalOpen(true)}
-        className="w-full bg-black/60 backdrop-blur-2xl neon-border-cyan rounded-2xl p-5 text-left mb-6 relative overflow-hidden cursor-pointer group transition-all"
+        className="w-full bg-black border border-white/20 rounded-2xl p-5 text-left mb-6 relative overflow-hidden cursor-pointer group transition-all"
       >
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             <span className="text-3xl">{rank.badge}</span>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-extrabold text-white text-lg tracking-tight group-hover:text-amber-300 transition-colors flex items-center gap-1.5">
-                  {rank.name} <Trophy className="w-4 h-4 text-amber-400 opacity-60 group-hover:opacity-100 transition-opacity" />
+                <h3 className="font-extrabold text-white text-lg tracking-tight flex items-center gap-1.5">
+                  {rank.name} <Trophy className="w-4 h-4 text-white opacity-80" />
                 </h3>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 font-bold">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/10 border border-white/20 text-white font-bold">
                   Day {streak} Active
                 </span>
               </div>
-              <p className="text-xs text-white/60">{rank.description} <span className="text-amber-400 text-[10px] underline ml-1 font-bold">View Tier Roadmap &rarr;</span></p>
+              <p className="text-xs text-white/60">{rank.description} <span className="text-white text-[10px] underline ml-1 font-bold">View Tier Roadmap &rarr;</span></p>
             </div>
           </div>
 
           <button 
             onClick={(e) => { e.stopPropagation(); setIsSyncModalOpen(true); }}
-            className="hidden sm:flex items-center gap-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-bold text-xs px-3 py-2 rounded-xl shadow-lg transition-all z-10"
+            className="hidden sm:flex items-center gap-1.5 bg-white hover:bg-white/90 text-black font-bold text-xs px-3 py-2 rounded-xl shadow-lg transition-all z-10"
           >
-            <Zap className="w-4 h-4 text-yellow-300" /> Wearable Sync
+            <Zap className="w-4 h-4 text-black" /> Wearable Sync
           </button>
         </div>
 
@@ -382,9 +382,9 @@ export const Home = () => {
               <span>Progress to {rankProgress.nextRank.badge} {rankProgress.nextRank.name}</span>
               <span>{rankProgress.daysLeft} days remaining</span>
             </div>
-            <div className="w-full h-2 bg-black/40 rounded-full overflow-hidden border border-white/5">
+            <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden border border-white/10">
               <div 
-                className="h-full bg-gradient-to-r from-indigo-400 to-amber-400 rounded-full transition-all duration-500"
+                className="h-full bg-white rounded-full transition-all duration-500"
                 style={{ width: `${rankProgress.progressPct}%` }}
               />
             </div>
@@ -393,29 +393,28 @@ export const Home = () => {
 
         <button 
           onClick={() => setIsSyncModalOpen(true)}
-          className="sm:hidden w-full mt-3 flex items-center justify-center gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-xs py-2 rounded-xl shadow-lg transition-all"
+          className="sm:hidden w-full mt-3 flex items-center justify-center gap-1.5 bg-white hover:bg-white/90 text-black font-bold text-xs py-2 rounded-xl shadow-lg transition-all"
         >
-          <Zap className="w-4 h-4 text-yellow-300" /> Wearable Sync
+          <Zap className="w-4 h-4 text-black" /> Wearable Sync
         </button>
       </div>
 
       {/* Main Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full mb-8">
-        <div className="bg-black/40 border border-white/10 shadow-xl rounded-2xl p-4 flex flex-col items-center justify-center">
-          <Flame className="h-6 w-6 text-amber-500 mb-2" />
+        <div className="bg-black border border-white/20 rounded-2xl p-4 flex flex-col items-center justify-center">
+          <Flame className="h-6 w-6 text-white mb-2" />
           <p className="text-3xl font-black text-white">{streak}</p>
           <p className="text-[10px] text-white/50 uppercase tracking-widest font-bold">Streak</p>
         </div>
-        <div className="bg-black/40 border border-white/10 shadow-xl rounded-2xl p-4 flex flex-col items-center justify-center">
-          <CheckSquare className="h-6 w-6 text-emerald-500 mb-2" />
+        <div className="bg-black border border-white/20 rounded-2xl p-4 flex flex-col items-center justify-center">
+          <CheckSquare className="h-6 w-6 text-white mb-2" />
           <p className="text-3xl font-black text-white">{completedCount}/{totalCount}</p>
           <p className="text-[10px] text-white/50 uppercase tracking-widest font-bold">Today</p>
         </div>
-        <div className="bg-black/40 border border-white/10 shadow-xl rounded-2xl p-4 flex flex-col items-center justify-center relative overflow-hidden group hover:border-indigo-500/50 transition-colors cursor-pointer" onClick={() => navigate('/dashboard')}>
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 z-0" />
+        <div className="bg-black border border-white/20 rounded-2xl p-4 flex flex-col items-center justify-center relative overflow-hidden group hover:border-white/50 transition-colors cursor-pointer" onClick={() => navigate('/dashboard')}>
           <div className="relative z-10 flex flex-col items-center justify-center text-center">
             <p className="text-sm md:text-base font-bold text-white mb-1">Log Tasks</p>
-            <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest">Dashboard &rarr;</p>
+            <p className="text-[10px] text-white/80 font-bold uppercase tracking-widest">Dashboard &rarr;</p>
           </div>
         </div>
         <div className="bg-black/40 border border-white/10 shadow-xl rounded-2xl p-4 flex flex-col items-center justify-center relative overflow-hidden group hover:border-emerald-500/50 transition-colors cursor-pointer" onClick={() => navigate('/progress')}>

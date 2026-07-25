@@ -8,11 +8,10 @@ import { Today } from '../tasks/Today';
 import { WearableSyncModal } from '../integrations/WearableSyncModal';
 
 const GlassCard = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`bg-black/60 backdrop-blur-2xl neon-border-cyan rounded-3xl relative overflow-hidden transition-all duration-300 ${className}`}>
+  <div className={`bg-black border border-white/20 rounded-3xl relative overflow-hidden transition-all duration-300 ${className}`}>
     {children}
   </div>
 );
-
 
 const MINDFUL_PROMPTS = [
   "What was the hardest urge you resisted today, and how did it feel to win?",
@@ -108,7 +107,7 @@ export const Dashboard = () => {
           <p className="text-white/50 mb-6">Start a challenge from the Home page to access your Dashboard.</p>
           <button 
             onClick={() => navigate('/home')}
-            className="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-xl transition-colors"
+            className="bg-white hover:bg-white/90 text-black font-bold py-3 px-6 rounded-xl transition-colors"
           >
             Go to Home
           </button>
@@ -128,14 +127,14 @@ export const Dashboard = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="flex items-start gap-3 rounded-2xl border border-indigo-400/20 bg-indigo-500/10 backdrop-blur-xl px-4 py-3 mb-6 flex-shrink-0"
+            className="flex items-start gap-3 rounded-2xl border border-white/20 bg-white/5 px-4 py-3 mb-6 flex-shrink-0"
           >
-            <Info className="h-4 w-4 text-indigo-300 mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-indigo-300/90 flex-1">
-              <span className="font-semibold text-indigo-200">Day {streak + 1} 👋 </span>
+            <Info className="h-4 w-4 text-white mt-0.5 flex-shrink-0" />
+            <p className="text-xs text-white/80 flex-1">
+              <span className="font-semibold text-white">Day {streak + 1} 👋 </span>
               Tap any task to log details. Check it off when done. All 8 = confetti! 🎊
             </p>
-            <button onClick={() => setShowTip(false)} className="text-white/30 hover:text-white/60 transition-colors">
+            <button onClick={() => setShowTip(false)} className="text-white/40 hover:text-white transition-colors">
               <X className="h-4 w-4" />
             </button>
           </motion.div>
@@ -172,10 +171,10 @@ export const Dashboard = () => {
               value={journalText}
               onChange={e => setJournalText(e.target.value)}
               placeholder="Tap here to reflect on your day..."
-              className="w-full flex-1 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-xs text-white/90 placeholder-white/20 p-3.5 resize-none outline-none focus:border-white/30 transition-all text-center leading-relaxed min-h-[100px]"
+              className="w-full flex-1 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-xs text-white placeholder-white/20 p-3.5 resize-none outline-none focus:border-white/30 transition-all text-center leading-relaxed min-h-[100px]"
             />
             <div className="flex justify-center gap-4 mt-3">
-              <button onClick={() => setJournalText('')} className="text-[11px] text-white/40 hover:text-white/70 transition-colors uppercase tracking-widest font-bold">Clear</button>
+              <button onClick={() => setJournalText('')} className="text-[11px] text-white/40 hover:text-white transition-colors uppercase tracking-widest font-bold">Clear</button>
               <button 
                 onClick={handleJournalSave}
                 className="text-[11px] font-bold uppercase tracking-widest bg-white/20 hover:bg-white/30 text-white px-5 py-1.5 rounded-full border border-white/20 transition-all">
@@ -202,11 +201,11 @@ export const Dashboard = () => {
             <div className="flex items-center gap-2">
               <button
                 onClick={handleFreezeClick}
-                className={`border font-bold text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all shadow-md ${
+                className={`border font-bold text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all ${
                   isTodayFrozen 
-                    ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400/50 shadow-cyan-950/50' 
+                    ? 'bg-white/30 text-white border-white/40' 
                     : freezesLeft > 0 
-                    ? 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border-cyan-500/30' 
+                    ? 'bg-white/10 hover:bg-white/20 text-white border-white/20' 
                     : 'bg-white/5 text-white/30 border-white/10 opacity-50 cursor-not-allowed'
                 }`}
                 title="Protect your streak with a Freeze Day"
@@ -216,9 +215,9 @@ export const Dashboard = () => {
 
               <button
                 onClick={() => setIsSyncModalOpen(true)}
-                className="bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 font-bold text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all"
+                className="bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all"
               >
-                <Zap className="w-3.5 h-3.5 text-yellow-300" /> Wearable Sync
+                <Zap className="w-3.5 h-3.5 text-white" /> Wearable Sync
               </button>
             </div>
           </div>

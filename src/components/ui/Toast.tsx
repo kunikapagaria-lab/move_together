@@ -51,17 +51,11 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -20, scale: 0.95 }}
               transition={{ duration: 0.25 }}
-              className={`pointer-events-auto w-full backdrop-blur-2xl border p-4 rounded-2xl shadow-2xl flex items-start gap-3 text-xs font-bold ${
-                toast.type === 'error'
-                  ? 'bg-rose-950/90 border-rose-500/40 text-rose-200 shadow-rose-950/50'
-                  : toast.type === 'success'
-                  ? 'bg-emerald-950/90 border-emerald-500/40 text-emerald-200 shadow-emerald-950/50'
-                  : 'bg-indigo-950/90 border-indigo-500/40 text-indigo-200 shadow-indigo-950/50'
-              }`}
+              className="pointer-events-auto w-full bg-black border border-white/30 p-4 rounded-2xl shadow-2xl flex items-start gap-3 text-xs font-bold text-white"
             >
-              {toast.type === 'error' && <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />}
-              {toast.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />}
-              {toast.type === 'info' && <Info className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />}
+              {toast.type === 'error' && <AlertCircle className="w-5 h-5 text-white shrink-0 mt-0.5" />}
+              {toast.type === 'success' && <CheckCircle2 className="w-5 h-5 text-white shrink-0 mt-0.5" />}
+              {toast.type === 'info' && <Info className="w-5 h-5 text-white shrink-0 mt-0.5" />}
 
               <p className="flex-1 leading-snug">{toast.message}</p>
 

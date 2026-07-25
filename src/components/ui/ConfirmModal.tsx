@@ -30,7 +30,7 @@ export const ConfirmModal = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+        className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
         onClick={onClose}
       >
         <motion.div
@@ -38,7 +38,7 @@ export const ConfirmModal = ({
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.9, y: 20 }}
           onClick={(e) => e.stopPropagation()}
-          className="bg-[#161224] border border-white/15 shadow-[0_0_50px_rgba(0,0,0,0.8)] rounded-3xl p-6 sm:p-8 w-full max-w-md text-center relative overflow-hidden"
+          className="bg-black border border-white/20 shadow-2xl rounded-3xl p-6 sm:p-8 w-full max-w-md text-center relative overflow-hidden"
         >
           <button 
             onClick={onClose}
@@ -48,14 +48,8 @@ export const ConfirmModal = ({
           </button>
 
           <div className="flex justify-center mb-4">
-            <div className={`p-4 rounded-full border shadow-xl ${
-              type === 'danger'
-                ? 'bg-rose-500/20 border-rose-500/30 text-rose-400'
-                : type === 'freeze'
-                ? 'bg-cyan-500/20 border-cyan-500/30 text-cyan-300'
-                : 'bg-indigo-500/20 border-indigo-500/30 text-indigo-300'
-            }`}>
-              {type === 'freeze' ? <span className="text-3xl">❄️</span> : <AlertCircle className="w-8 h-8" />}
+            <div className="p-4 rounded-full border border-white/20 bg-white/10 text-white shadow-xl">
+              {type === 'freeze' ? <span className="text-3xl">❄️</span> : <AlertCircle className="w-8 h-8 text-white" />}
             </div>
           </div>
 
@@ -75,13 +69,7 @@ export const ConfirmModal = ({
                 onConfirm();
                 onClose();
               }}
-              className={`flex-1 font-bold text-xs py-3 rounded-xl shadow-lg transition-all active:scale-95 ${
-                type === 'danger'
-                  ? 'bg-rose-500 hover:bg-rose-600 text-white'
-                  : type === 'freeze'
-                  ? 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white'
-                  : 'bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white'
-              }`}
+              className="flex-1 bg-white hover:bg-white/90 text-black font-bold text-xs py-3 rounded-xl shadow-lg transition-all active:scale-95"
             >
               {confirmText}
             </button>

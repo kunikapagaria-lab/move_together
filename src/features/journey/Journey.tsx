@@ -27,10 +27,10 @@ export const Journey = () => {
 
   const getStatusColor = (status: string) => {
     switch(status) {
-      case 'active': return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
-      case 'completed': return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
-      case 'failed': return 'bg-rose-500/20 text-rose-400 border-rose-500/30';
-      case 'cancelled': return 'bg-white/10 text-white/50 border-white/20';
+      case 'active': return 'bg-white text-black border-white font-bold';
+      case 'completed': return 'bg-white/30 text-white border-white/40 font-bold';
+      case 'failed': return 'bg-white/10 text-white/60 border-white/20';
+      case 'cancelled': return 'bg-white/5 text-white/40 border-white/10';
       default: return 'bg-white/10 text-white border-white/20';
     }
   };
@@ -131,10 +131,10 @@ export const Journey = () => {
                     const isPartial = log && log.completedTaskIds?.length > 0 && !isCompleted;
                     
                     let blockColor = 'bg-white/5 border-white/10 hover:border-white/30'; // Future or unlogged
-                    if (isFrozen) blockColor = 'bg-gradient-to-br from-cyan-500 to-blue-600 border-cyan-300 text-white font-extrabold shadow-[0_0_20px_rgba(6,182,212,0.8)] scale-105 z-10';
-                    else if (isCompleted) blockColor = 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 hover:bg-emerald-500/30';
-                    else if (isPartial) blockColor = 'bg-amber-500/20 border-amber-500/50 text-amber-300 hover:bg-amber-500/30';
-                    else if (log) blockColor = 'bg-rose-500/20 border-rose-500/50 text-rose-300 hover:bg-rose-500/30'; // Log exists but 0 tasks
+                    if (isFrozen) blockColor = 'bg-white text-black font-extrabold border-white scale-105 z-10';
+                    else if (isCompleted) blockColor = 'bg-white/30 border-white/50 text-white hover:bg-white/40';
+                    else if (isPartial) blockColor = 'bg-white/15 border-white/30 text-white/80 hover:bg-white/20';
+                    else if (log) blockColor = 'bg-white/5 border-white/20 text-white/50 hover:bg-white/10'; // Log exists but 0 tasks
 
                     return (
                       <button

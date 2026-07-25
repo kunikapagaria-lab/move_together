@@ -171,7 +171,7 @@ export const Today = ({ hideHeader = false }: { hideHeader?: boolean }) => {
       {/* Progress Bar always shown */}
       <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden mb-2">
         <motion.div
-          className="h-full bg-gradient-to-r from-indigo-500 to-violet-400 rounded-full"
+          className="h-full bg-white rounded-full"
           animate={{ width: `${totalCount > 0 ? (completedCount / totalCount) * 100 : 0}%` }}
           transition={{ duration: 0.4, ease: 'easeOut' }}
         />
@@ -199,33 +199,26 @@ export const Today = ({ hideHeader = false }: { hideHeader?: boolean }) => {
                 className="flex items-center gap-4 px-4 py-3 cursor-pointer"
                 onClick={() => setExpandedId(isExpanded ? null : task.id)}
               >
-                <div
-                  className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
-                  style={{ backgroundColor: task.completed ? task.color + '25' : 'rgba(255,255,255,0.06)' }}
-                >
-                  <Icon
-                    className="h-5 w-5"
-                    style={{ color: task.completed ? task.color : 'rgba(255,255,255,0.45)' }}
-                  />
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-white/10 border border-white/10">
+                  <Icon className="h-5 w-5 text-white" />
                 </div>
 
-                <p className={`flex-1 text-sm font-bold truncate ${task.completed ? 'text-white/40 line-through' : 'text-white/90'}`}>
+                <p className={`flex-1 text-sm font-bold truncate ${task.completed ? 'text-white/40 line-through' : 'text-white'}`}>
                   {task.title}
                 </p>
 
                 {/* Log indicator dot */}
                 {Object.values(logs[task.id] || {}).some(v => typeof v === 'string' && v.trim() !== '') && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-violet-400 flex-shrink-0" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-white flex-shrink-0" />
                 )}
 
                 <button
                   onClick={e => { e.stopPropagation(); handleToggleTask(task.id); }}
-                  className="relative flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 transition-all duration-300"
-                  style={
+                  className={`relative flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 transition-all duration-300 ${
                     task.completed
-                      ? { backgroundColor: task.color, borderColor: task.color }
-                      : { borderColor: 'rgba(255,255,255,0.2)' }
-                  }
+                      ? 'bg-white border-white text-black'
+                      : 'border-white/30 hover:border-white'
+                  }`}
                 >
                   <AnimatePresence>
                     {task.completed && (
@@ -233,7 +226,7 @@ export const Today = ({ hideHeader = false }: { hideHeader?: boolean }) => {
                         initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
                         transition={{ type: 'spring', stiffness: 600, damping: 30 }}
                       >
-                        <Check className="h-2.5 w-2.5 text-white" />
+                        <Check className="h-3 w-3 text-black stroke-[3]" />
                       </motion.div>
                     )}
                   </AnimatePresence>

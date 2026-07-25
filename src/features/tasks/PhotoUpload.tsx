@@ -139,7 +139,7 @@ export const PhotoUpload = ({ onComplete, isTaskCompleted: _isTaskCompleted }: P
         <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-between p-4">
           <div className="w-full flex items-center justify-between pt-2 px-2">
             <span className="text-xs font-bold text-white tracking-widest uppercase flex items-center gap-1.5">
-              <Zap className="w-4 h-4 text-amber-400" /> Live Camera
+              <Zap className="w-4 h-4 text-white" /> Live Camera
             </span>
             <button 
               onClick={handleCloseCameraModal}
@@ -162,7 +162,7 @@ export const PhotoUpload = ({ onComplete, isTaskCompleted: _isTaskCompleted }: P
           <div className="pb-6 flex flex-col items-center gap-3">
             <button
               onClick={handleSnapPhoto}
-              className="w-16 h-16 rounded-full bg-white border-4 border-indigo-500 shadow-[0_0_30px_rgba(99,102,241,0.6)] flex items-center justify-center hover:scale-105 active:scale-90 transition-all cursor-pointer"
+              className="w-16 h-16 rounded-full bg-white border-4 border-white shadow-2xl flex items-center justify-center hover:scale-105 active:scale-90 transition-all cursor-pointer"
               title="Snap Photo"
             >
               <div className="w-12 h-12 rounded-full bg-white border-2 border-slate-300" />
@@ -190,7 +190,7 @@ export const PhotoUpload = ({ onComplete, isTaskCompleted: _isTaskCompleted }: P
                 <button
                   type="button"
                   onClick={handleTriggerNativeCamera}
-                  className="bg-indigo-500/80 hover:bg-indigo-500 backdrop-blur-md border border-indigo-400 text-white font-bold text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all active:scale-95 shadow-lg"
+                  className="bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white font-bold text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all active:scale-95 shadow-lg"
                 >
                   <Camera className="h-3.5 w-3.5" /> Re-take
                 </button>
@@ -206,7 +206,7 @@ export const PhotoUpload = ({ onComplete, isTaskCompleted: _isTaskCompleted }: P
                 <button
                   type="button"
                   onClick={handleRemovePhoto}
-                  className="bg-rose-500/30 hover:bg-rose-500/50 border border-rose-500/40 text-rose-200 font-bold text-xs p-1.5 rounded-xl transition-all active:scale-95"
+                  className="bg-white/10 hover:bg-white/20 border border-white/20 text-white/70 font-bold text-xs p-1.5 rounded-xl transition-all active:scale-95"
                   title="Remove Photo"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
@@ -221,9 +221,9 @@ export const PhotoUpload = ({ onComplete, isTaskCompleted: _isTaskCompleted }: P
           <button
             type="button"
             onClick={handleTriggerNativeCamera}
-            className="border-2 border-dashed border-indigo-500/30 hover:border-indigo-400 transition-all rounded-2xl p-5 flex flex-col items-center justify-center text-center cursor-pointer bg-indigo-500/[0.04] hover:bg-indigo-500/[0.1] group"
+            className="border-2 border-dashed border-white/20 hover:border-white transition-all rounded-2xl p-5 flex flex-col items-center justify-center text-center cursor-pointer bg-white/[0.02] hover:bg-white/[0.08] group"
           >
-            <div className="h-12 w-12 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+            <div className="h-12 w-12 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
               <Camera className="h-6 w-6" />
             </div>
             <p className="text-white font-bold text-xs">Take Photo</p>
@@ -234,9 +234,9 @@ export const PhotoUpload = ({ onComplete, isTaskCompleted: _isTaskCompleted }: P
           <button
             type="button"
             onClick={handleOpenGallery}
-            className="border-2 border-dashed border-white/10 hover:border-purple-400/80 transition-all rounded-2xl p-5 flex flex-col items-center justify-center text-center cursor-pointer bg-white/[0.02] hover:bg-purple-500/[0.05] group"
+            className="border-2 border-dashed border-white/20 hover:border-white transition-all rounded-2xl p-5 flex flex-col items-center justify-center text-center cursor-pointer bg-white/[0.02] hover:bg-white/[0.08] group"
           >
-            <div className="h-12 w-12 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-400 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+            <div className="h-12 w-12 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
               <ImageIcon className="h-6 w-6" />
             </div>
             <p className="text-white font-bold text-xs">Choose Photo</p>
