@@ -7,6 +7,8 @@ import { fetchAllChallenges, fetchChallengeLogs } from '../../store/historySlice
 import type { Challenge } from '../../store/challengeSlice';
 import { BackButton } from '../../components/ui/BackButton';
 
+import { formatDateDDMMYYYY } from '../../utils/dateUtils';
+
 export const Journey = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { challenges, selectedChallengeLogs, isLoading } = useSelector((state: RootState) => state.history);
@@ -63,7 +65,7 @@ export const Journey = () => {
                <div className="relative z-10 flex justify-between items-start mb-4">
                  <div>
                    <h3 className="font-bold text-white text-lg">Challenge #{challenges.length - idx}</h3>
-                   <p className="text-xs text-white/50">{new Date(challenge.startDate).toLocaleDateString()} - {challenge.durationDays} Days</p>
+                   <p className="text-xs text-white/50">{formatDateDDMMYYYY(challenge.startDate)} - {challenge.durationDays} Days</p>
                  </div>
                  <span className={`text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-lg border ${getStatusColor(challenge.status)}`}>
                    {challenge.status}
@@ -98,7 +100,7 @@ export const Journey = () => {
                    <Calendar className="h-6 w-6 text-indigo-400" />
                    Challenge {selectedChallenge.durationDays} Days
                  </h2>
-                 <p className="text-white/50 text-sm mt-1">Started {new Date(selectedChallenge.startDate).toLocaleDateString()}</p>
+                 <p className="text-white/50 text-sm mt-1">Started {formatDateDDMMYYYY(selectedChallenge.startDate)}</p>
                </div>
                <span className={`text-sm font-bold uppercase tracking-widest px-4 py-2 rounded-xl border ${getStatusColor(selectedChallenge.status)}`}>
                  {selectedChallenge.status}
@@ -165,7 +167,7 @@ export const Journey = () => {
                    <h2 className="text-2xl font-bold text-white mb-1">
                      Daily Log
                    </h2>
-                   <p className="text-white/50 text-sm font-mono">{selectedLog.date}</p>
+                   <p className="text-white/50 text-sm font-mono">{formatDateDDMMYYYY(selectedLog.date)}</p>
                  </div>
                  <button onClick={() => setSelectedLog(null)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors text-white/50 hover:text-white">
                    <X className="w-5 h-5" />
