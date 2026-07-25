@@ -52,14 +52,14 @@ export const TopNav = () => {
         
         {/* Brand */}
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/home')}>
-          <div className="bg-gradient-to-r from-cyan-500 to-fuchsia-500 rounded-xl p-1.5 shadow-[0_0_20px_rgba(0,243,255,0.6)] animate-pulse">
+          <div className="bg-white/10 border border-white/20 rounded-xl p-1.5">
             <Flame className="h-5 w-5 text-white" />
           </div>
-          <span className="text-white font-black tracking-tight text-lg drop-shadow-md">MOVE <span className="text-cyan-400 neon-text-cyan">TOGETHER</span></span>
+          <span className="text-white font-black tracking-tight text-lg">MOVE TOGETHER</span>
         </div>
 
         {/* Center Nav */}
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1 sm:gap-2 bg-black/60 border border-cyan-500/30 rounded-2xl p-1 shadow-lg">
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1 sm:gap-2 bg-black/80 border border-white/10 rounded-2xl p-1 shadow-lg">
           {navItems.map((item) => {
             let hasBadge = false;
             
@@ -77,7 +77,7 @@ export const TopNav = () => {
                 className={({ isActive }) => cn(
                   "relative flex items-center justify-center p-2 sm:px-4 sm:py-2 rounded-xl text-sm font-bold transition-all duration-300",
                   isActive 
-                    ? "text-cyan-300 bg-cyan-500/20 border border-cyan-400/50 shadow-[0_0_15px_rgba(0,243,255,0.4)]" 
+                    ? "text-white bg-white/20 border border-white/20" 
                     : "text-white/40 hover:text-white hover:bg-white/5"
                 )}
               >
@@ -85,7 +85,7 @@ export const TopNav = () => {
                   <>
                     <item.icon className={cn(
                       "h-5 w-5 sm:mr-2",
-                      isActive ? "text-cyan-400 drop-shadow-[0_0_8px_rgba(0,243,255,0.8)]" : ""
+                      isActive ? "text-white" : ""
                     )} />
                     <span className="hidden sm:block tracking-wide">{item.name}</span>
                     
@@ -104,11 +104,11 @@ export const TopNav = () => {
           {/* Athlete Rank Pill */}
           <button 
             onClick={() => setIsRankModalOpen(true)}
-            className="hidden sm:flex items-center gap-1.5 bg-black/40 hover:bg-white/10 border border-white/10 hover:border-amber-400/50 px-3 py-1 rounded-full text-xs font-bold text-white/80 transition-all cursor-pointer group relative"
+            className="hidden sm:flex items-center gap-1.5 bg-black/40 hover:bg-white/10 border border-white/10 px-3 py-1 rounded-full text-xs font-bold text-white transition-all cursor-pointer group relative"
             title="View Rank Roadmap & Locked Tiers"
           >
             <span>{rank.badge}</span>
-            <span className="bg-gradient-to-r from-amber-300 to-yellow-500 bg-clip-text text-transparent group-hover:underline">{rank.name}</span>
+            <span className="text-white font-bold group-hover:underline">{rank.name}</span>
           </button>
 
           {/* Profile Dropdown Toggle */}

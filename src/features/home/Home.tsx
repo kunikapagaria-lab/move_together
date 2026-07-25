@@ -339,9 +339,9 @@ export const Home = () => {
         </div>
         <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight mb-3">
           Welcome back,<br />
-          <span className="bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-amber-300 bg-clip-text text-transparent neon-text-cyan">{user?.displayName} 👋</span>
+          <span className="text-white font-extrabold">{user?.displayName} 👋</span>
         </h1>
-        <p className="text-xs text-cyan-200/60 max-w-xs mx-auto leading-relaxed italic">
+        <p className="text-xs text-white/70 max-w-xs mx-auto leading-relaxed italic">
           "{quote}"
         </p>
       </motion.div>
