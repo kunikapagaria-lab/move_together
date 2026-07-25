@@ -8,7 +8,7 @@ import { Today } from '../tasks/Today';
 import { WearableSyncModal } from '../integrations/WearableSyncModal';
 
 const GlassCard = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`bg-gradient-to-b from-white/10 to-transparent backdrop-blur-3xl border border-white/20 rounded-3xl shadow-2xl shadow-black/50 relative overflow-hidden shadow-[inset_0_1px_1px_rgba(255,255,255,0.25)] ${className}`}>
+  <div className={`bg-black/60 backdrop-blur-2xl neon-border-cyan rounded-3xl relative overflow-hidden transition-all duration-300 ${className}`}>
     {children}
   </div>
 );

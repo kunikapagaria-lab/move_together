@@ -47,19 +47,19 @@ export const TopNav = () => {
 
   return (
     <>
-      <nav className="fixed top-0 w-full bg-[#12101a]/80 backdrop-blur-xl border-b border-white/5 z-50">
+      <nav className="fixed top-0 w-full bg-[#0d0a1b]/80 backdrop-blur-2xl border-b border-cyan-500/20 z-50 shadow-[0_4px_30px_rgba(0,243,255,0.15)]">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between relative">
         
         {/* Brand */}
-        <div className="flex items-center gap-2">
-          <div className="bg-gradient-to-r from-indigo-500 to-violet-500 rounded-lg p-1">
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/home')}>
+          <div className="bg-gradient-to-r from-cyan-500 to-fuchsia-500 rounded-xl p-1.5 shadow-[0_0_20px_rgba(0,243,255,0.6)] animate-pulse">
             <Flame className="h-5 w-5 text-white" />
           </div>
-          <span className="text-white font-black tracking-tight text-lg">MOVE <span className="text-indigo-400">TOGETHER</span></span>
+          <span className="text-white font-black tracking-tight text-lg drop-shadow-md">MOVE <span className="text-cyan-400 neon-text-cyan">TOGETHER</span></span>
         </div>
 
         {/* Center Nav */}
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1 sm:gap-2 bg-black/40 border border-white/5 rounded-2xl p-1">
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1 sm:gap-2 bg-black/60 border border-cyan-500/30 rounded-2xl p-1 shadow-lg">
           {navItems.map((item) => {
             let hasBadge = false;
             
@@ -77,15 +77,15 @@ export const TopNav = () => {
                 className={({ isActive }) => cn(
                   "relative flex items-center justify-center p-2 sm:px-4 sm:py-2 rounded-xl text-sm font-bold transition-all duration-300",
                   isActive 
-                    ? "text-white bg-white/10 shadow-lg" 
-                    : "text-white/40 hover:text-white/80 hover:bg-white/5"
+                    ? "text-cyan-300 bg-cyan-500/20 border border-cyan-400/50 shadow-[0_0_15px_rgba(0,243,255,0.4)]" 
+                    : "text-white/40 hover:text-white hover:bg-white/5"
                 )}
               >
                 {({ isActive }) => (
                   <>
                     <item.icon className={cn(
                       "h-5 w-5 sm:mr-2",
-                      isActive ? "text-indigo-400" : ""
+                      isActive ? "text-cyan-400 drop-shadow-[0_0_8px_rgba(0,243,255,0.8)]" : ""
                     )} />
                     <span className="hidden sm:block tracking-wide">{item.name}</span>
                     

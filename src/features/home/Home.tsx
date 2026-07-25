@@ -339,9 +339,9 @@ export const Home = () => {
         </div>
         <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight mb-3">
           Welcome back,<br />
-          <span className="bg-gradient-to-r from-violet-300 to-indigo-300 bg-clip-text text-transparent">{user?.displayName} 👋</span>
+          <span className="bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-amber-300 bg-clip-text text-transparent neon-text-cyan">{user?.displayName} 👋</span>
         </h1>
-        <p className="text-sm text-white/50 max-w-xs mx-auto leading-relaxed italic">
+        <p className="text-xs text-cyan-200/60 max-w-xs mx-auto leading-relaxed italic">
           "{quote}"
         </p>
       </motion.div>
@@ -349,7 +349,7 @@ export const Home = () => {
       {/* Athlete Rank Progress Card */}
       <div 
         onClick={() => setIsRankModalOpen(true)}
-        className="w-full bg-gradient-to-r from-indigo-900/40 via-purple-900/40 to-slate-900/40 backdrop-blur-xl border border-indigo-500/20 hover:border-amber-400/50 shadow-xl rounded-2xl p-5 text-left mb-6 relative overflow-hidden cursor-pointer group transition-all"
+        className="w-full bg-black/60 backdrop-blur-2xl neon-border-cyan rounded-2xl p-5 text-left mb-6 relative overflow-hidden cursor-pointer group transition-all"
       >
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
