@@ -7,7 +7,8 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 
 export const Progress = () => {
-  const { streak, history } = useSelector((state: RootState) => state.challenge);
+  const { streak, history, activeChallenge } = useSelector((state: RootState) => state.challenge);
+  const duration = activeChallenge?.durationDays || 75;
 
   // Calculate consistency data from history
   const calculateConsistency = () => {
@@ -45,7 +46,6 @@ export const Progress = () => {
   const consistencyData = calculateConsistency();
 
   // Generate 75 days
-  const days = Array.from({ length: 75 }, (_, i) => i + 1);
   const currentDay = streak + 1; // Assuming streak indicates the current day
 
   const getDayStatus = (day: number) => {
@@ -88,7 +88,7 @@ export const Progress = () => {
         </div>
         <div className="bg-black/40 backdrop-blur-xl border border-white/10 shadow-xl rounded-2xl p-4 flex flex-col justify-center space-y-1">
           <p className="text-xs text-white/60 font-semibold tracking-wider uppercase">Remaining</p>
-          <p className="text-2xl font-bold text-white/60">{75 - streak} Days</p>
+          <p className="text-2xl font-bold text-white/60">{Math.max(0, duration - streak)} Days</p>
         </div>
       </div>
 
@@ -109,9 +109,9 @@ export const Progress = () => {
 
       {/* Calendar Grid */}
       <div className="bg-black/40 backdrop-blur-xl border border-white/10 shadow-xl rounded-2xl p-6">
-        <h2 className="text-xl font-bold text-white mb-6">The 75 Days</h2>
+        <h2 className="text-xl font-bold text-white mb-6">The {duration} Days</h2>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(3rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(4rem,1fr))] gap-3 sm:gap-4">
-          {days.map((day) => {
+          {Array.from({ length: duration }, (_, i) => i + 1).map((day) => {
             const status = getDayStatus(day);
             const isMilestone = [7, 14, 21, 30, 37, 50, 60, 75].includes(day);
 
