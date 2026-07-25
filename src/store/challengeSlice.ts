@@ -1,33 +1,18 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '../services/api';
 
-export interface Task {
-  id: string;
-  title: string;
-  iconName: string;
-  color: string;
-}
-
 export interface Challenge {
   _id: string;
-  userId: string;
   durationDays: number;
   startDate: string;
-  tasks: Task[];
+  tasks: any[];
   status: 'active' | 'completed' | 'failed' | 'cancelled';
 }
 
-interface DailyLog {
-  _id: string;
-  challengeTemplateId: string;
-  completedTaskIds: string[];
-  journalEntry: string;
-}
-
 interface ChallengeState {
-  activeChallenge: Challenge | null;
-  todayLog: DailyLog | null;
-  history: DailyLog[];
+  activeChallenge: Challenge | any | null;
+  todayLog: any | null;
+  history: any[];
   streak: number;
   isLoading: boolean;
   isError: boolean;
@@ -73,7 +58,7 @@ export const startChallenge = createAsyncThunk(
       const challenge = res.challenge || res;
       const log = await api.getTodayLog(challenge._id);
       const streakData = await api.getStreak(challenge._id);
-      return { challenge, log, streak: streakData.streak || 0, history: [] };
+      return { challenge, log, streak: streakData?.streak || 0, history: [] };
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.message);
     }
@@ -97,10 +82,10 @@ export const toggleTask = createAsyncThunk(
   async ({ taskId, isCompleted }: { taskId: string, isCompleted: boolean }, thunkAPI) => {
     try {
       const state: any = thunkAPI.getState();
-      const challengeId = state.challenge.activeChallenge._id;
+      const challengeId = state.challenge.activeChallenge?._id || 'default';
       const log = await api.toggleTask(challengeId, taskId, isCompleted);
       const streakData = await api.getStreak(challengeId);
-      return { log, streak: streakData.streak || 0 };
+      return { log, streak: streakData?.streak || 0 };
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.message);
     }
@@ -112,7 +97,7 @@ export const updateJournal = createAsyncThunk(
   async (journalEntry: string, thunkAPI) => {
     try {
       const state: any = thunkAPI.getState();
-      const challengeId = state.challenge.activeChallenge._id;
+      const challengeId = state.challenge.activeChallenge?._id || 'default';
       return await api.updateJournal(challengeId, journalEntry);
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.message);
@@ -142,10 +127,34 @@ export const challengeSlice = createSlice({
         state.isError = true;
         state.message = action.payload as string;
       })
-      // Toggle Task
+      // Toggle Task (Instant Optimistic UI Toggle)
+      .addCase(toggleTask.pending, (state, action) => {
+        const { taskId, isCompleted } = action.meta.arg;
+        if (!state.todayLog) {
+          state.todayLog = {
+            completedTaskIds: [],
+            journalEntry: '',
+            date: new Date().toISOString().split('T')[0]
+          };
+        }
+        if (!state.todayLog.completedTaskIds) {
+          state.todayLog.completedTaskIds = [];
+        }
+        if (isCompleted) {
+          if (!state.todayLog.completedTaskIds.includes(taskId)) {
+            state.todayLog.completedTaskIds.push(taskId);
+          }
+        } else {
+          state.todayLog.completedTaskIds = state.todayLog.completedTaskIds.filter((id: string) => id !== taskId);
+        }
+      })
       .addCase(toggleTask.fulfilled, (state, action) => {
-        state.todayLog = action.payload.log;
-        state.streak = action.payload.streak;
+        if (action.payload.log) {
+          state.todayLog = action.payload.log;
+        }
+        if (typeof action.payload.streak === 'number') {
+          state.streak = action.payload.streak;
+        }
       })
       // Update Journal
       .addCase(updateJournal.fulfilled, (state, action) => {

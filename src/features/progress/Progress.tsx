@@ -23,8 +23,8 @@ export const Progress = () => {
     }
 
     const counts: Record<string, number> = { water: 0, weight: 0, cardio: 0, diet: 0, reading: 0, photo: 0, selfcare: 0 };
-    (history || []).forEach(log => {
-      (log?.completedTaskIds || []).forEach(id => {
+    (history || []).forEach((log: any) => {
+      (log?.completedTaskIds || []).forEach((id: string) => {
         if (counts[id] !== undefined) counts[id]++;
       });
     });

@@ -135,7 +135,7 @@ export const Today = ({ hideHeader = false }: { hideHeader?: boolean }) => {
   };
 
   const totalCount = tasks.length || 8;
-  const completedCount = tasks.filter(t => t.completed).length;
+  const completedCount = tasks.filter((t: any) => t.completed).length;
 
   const handleToggleTask = (id: string) => {
     if (navigator.vibrate) navigator.vibrate(30);
@@ -179,7 +179,7 @@ export const Today = ({ hideHeader = false }: { hideHeader?: boolean }) => {
 
       {/* Task list */}
       <div className="space-y-3">
-        {tasks.map(task => {
+        {tasks.map((task: any) => {
           const Icon = task.icon;
           const isExpanded = expandedId === task.id;
           const fields = (TASK_FIELDS as any)[task.id] || [];
