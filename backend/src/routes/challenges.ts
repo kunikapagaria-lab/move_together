@@ -139,7 +139,7 @@ router.get('/groups', protect, async (req: AuthRequest, res: Response) => {
           
           let currentStreak = 0;
           for (let i = 0; i < logs.length; i++) {
-             if (logs[i].completedTaskIds.length === activeChallenge.tasks.length) {
+             if (logs[i].completedTaskIds.length === (activeChallenge.tasks as any).length) {
                 currentStreak++;
              } else {
                 if (logs[i].date === todayStr) continue;

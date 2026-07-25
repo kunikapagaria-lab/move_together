@@ -39,8 +39,8 @@ router.post('/sync', protect, async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Find the first physical/workout task that isn't checked off yet
-    const physicalTask = activeChallenge.tasks.find(t => 
+    const tasksArr = activeChallenge.tasks as any[];
+    const physicalTask = tasksArr.find((t: any) => 
       !todayLog.completedTaskIds.includes(t.id) &&
       (t.title.toLowerCase().includes('run') || 
        t.title.toLowerCase().includes('workout') || 
@@ -48,7 +48,7 @@ router.post('/sync', protect, async (req: AuthRequest, res: Response) => {
        t.title.toLowerCase().includes('training') ||
        t.title.toLowerCase().includes('stretch') ||
        t.title.toLowerCase().includes('yoga'))
-    ) || activeChallenge.tasks[0]; // fallback to first task if all done or custom
+    ) || tasksArr[0]; // fallback to first task if all done or custom
 
     if (physicalTask && !todayLog.completedTaskIds.includes(physicalTask.id)) {
       todayLog.completedTaskIds.push(physicalTask.id);
