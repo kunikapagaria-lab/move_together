@@ -37,6 +37,13 @@ export const startCronJobs = () => {
           date: yesterdayStr
         });
 
+        // If yesterday was a frozen date, skip failure (protected by Streak Freeze)
+        const frozenDates: string[] = (challenge as any).frozenDates || [];
+        if (frozenDates.includes(yesterdayStr)) {
+          console.log(`Challenge ${challenge._id} for user ${challenge.userId} was frozen on ${yesterdayStr}. Skipping failure.`);
+          continue;
+        }
+
         if (!log || log.completedTaskIds.length < requiredTasksCount) {
           challenge.status = 'failed';
           await challenge.save();

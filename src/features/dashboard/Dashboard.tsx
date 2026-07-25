@@ -40,11 +40,15 @@ const MOTIVATIONAL_QUOTES = [
 import { BackButton } from '../../components/ui/BackButton';
 import { useNavigate } from 'react-router-dom';
 
+import { freezeToday } from '../../store/challengeSlice';
+import { useToast } from '../../components/ui/Toast';
+
 export const Dashboard = () => {
   const [showTip, setShowTip] = useState(true);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const { showError, showSuccess } = useToast();
   const { streak, todayLog, activeChallenge, isLoading } = useSelector((state: RootState) => state.challenge);
 
   useEffect(() => {
@@ -63,8 +67,30 @@ export const Dashboard = () => {
   const currentPrompt = MINDFUL_PROMPTS[dayOfYear % MINDFUL_PROMPTS.length];
   const currentQuote = MOTIVATIONAL_QUOTES[dayOfYear % MOTIVATIONAL_QUOTES.length];
 
+  const todayStr = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0') + '-' + String(new Date().getDate()).padStart(2, '0');
+  const isTodayFrozen = activeChallenge?.frozenDates?.includes(todayStr);
+  const freezesLeft = (activeChallenge?.freezeDaysAllowed || 5) - (activeChallenge?.freezeDaysUsed || 0);
+
   const handleJournalSave = () => {
     dispatch(updateJournal(journalText));
+    showSuccess('Journal reflection saved!');
+  };
+
+  const handleFreezeToday = async () => {
+    if (isTodayFrozen) {
+      return showSuccess('Today is already protected by Streak Freeze! ❄️');
+    }
+    if (freezesLeft <= 0) {
+      return showError('No freeze days remaining for this challenge!');
+    }
+    if (window.confirm(`Activate Streak Freeze for today? You have ${freezesLeft}/5 freezes left.`)) {
+      try {
+        await dispatch(freezeToday()).unwrap();
+        showSuccess('Today is now frozen! ❄️ Your streak is safe from midnight reset.');
+      } catch (err: any) {
+        showError(typeof err === 'string' ? err : err?.message || 'Failed to apply streak freeze.');
+      }
+    }
   };
 
   if (!activeChallenge) {
@@ -168,12 +194,28 @@ export const Dashboard = () => {
               <p className="text-[11px] text-white/50 mt-0.5 uppercase tracking-widest">Complete all {activeChallenge?.tasks.length || 8} before midnight</p>
             </div>
 
-            <button
-              onClick={() => setIsSyncModalOpen(true)}
-              className="bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 font-bold text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all"
-            >
-              <Zap className="w-3.5 h-3.5 text-yellow-300" /> Wearable Sync
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleFreezeToday}
+                className={`border font-bold text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all shadow-md ${
+                  isTodayFrozen 
+                    ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400/50 shadow-cyan-950/50' 
+                    : freezesLeft > 0 
+                    ? 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border-cyan-500/30' 
+                    : 'bg-white/5 text-white/30 border-white/10 opacity-50 cursor-not-allowed'
+                }`}
+                title="Protect your streak with a Freeze Day"
+              >
+                ❄️ {isTodayFrozen ? 'Frozen Today' : `Freeze Today (${freezesLeft}/5)`}
+              </button>
+
+              <button
+                onClick={() => setIsSyncModalOpen(true)}
+                className="bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 font-bold text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all"
+              >
+                <Zap className="w-3.5 h-3.5 text-yellow-300" /> Wearable Sync
+              </button>
+            </div>
           </div>
           
           <div className="p-4 overflow-y-auto custom-scrollbar">

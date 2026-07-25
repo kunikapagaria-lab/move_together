@@ -83,6 +83,45 @@ router.get('/active', protect, async (req: AuthRequest, res: Response) => {
   }
 });
 
+// @route   POST /api/challenges/freeze-today
+// @desc    Freeze today's challenge progress (Streak Freeze)
+router.post('/freeze-today', protect, async (req: AuthRequest, res: Response) => {
+  const userId = req.user?.id;
+  const today = new Date();
+  const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+
+  try {
+    const activeChallenge: any = await ActiveChallenge.findOne({ userId, status: 'active' });
+    if (!activeChallenge) {
+      return res.status(404).json({ error: 'No active challenge found' });
+    }
+
+    const freezeAllowed = activeChallenge.freezeDaysAllowed || 5;
+    const freezeUsed = activeChallenge.freezeDaysUsed || 0;
+    const frozenDates: string[] = activeChallenge.frozenDates || [];
+
+    if (frozenDates.includes(todayStr)) {
+      return res.status(400).json({ error: 'Today is already frozen!' });
+    }
+
+    if (freezeUsed >= freezeAllowed) {
+      return res.status(400).json({ error: `You have used all ${freezeAllowed} freeze days for this challenge.` });
+    }
+
+    activeChallenge.freezeDaysUsed = freezeUsed + 1;
+    activeChallenge.frozenDates.push(todayStr);
+    await activeChallenge.save();
+
+    res.json({
+      message: 'Today has been successfully frozen! ❄️ Your streak is protected.',
+      challenge: activeChallenge
+    });
+  } catch (error) {
+    console.error('Error freezing today:', error);
+    res.status(500).json({ error: 'Server error applying streak freeze' });
+  }
+});
+
 // @route   POST /api/challenges/cancel
 // @desc    Cancel current active challenge
 router.post('/cancel', protect, async (req: AuthRequest, res: Response) => {

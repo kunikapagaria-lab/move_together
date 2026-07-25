@@ -114,17 +114,16 @@ export const Journey = () => {
                  {/* Generate grid of days based on duration */}
                  {Array.from({ length: selectedChallenge.durationDays }).map((_, i) => {
                    const dayNumber = i + 1;
-                   // Find if there is a log for this day number.
-                   // Since we sort logs chronologically, we can try to map them.
-                   // A safer way is to check the date, but for simplicity we match by index since it's 1 log per day.
-                   // In reality, logs might skip if failed, so we'll just map logs to days consecutively.
                    const log = selectedChallengeLogs[i]; 
+                   const logDate = log?.date;
+                   const isFrozen = selectedChallenge?.frozenDates?.includes(logDate);
                    
                    const isCompleted = log && log.completedTaskIds.length === selectedChallenge.tasks.length;
                    const isPartial = log && log.completedTaskIds.length > 0 && !isCompleted;
                    
                    let blockColor = 'bg-white/5 border-white/10 hover:border-white/30'; // Future or unlogged
-                   if (isCompleted) blockColor = 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 hover:bg-emerald-500/30';
+                   if (isFrozen) blockColor = 'bg-cyan-500/30 border-cyan-400/60 text-cyan-200 hover:bg-cyan-500/40 shadow-cyan-950/50';
+                   else if (isCompleted) blockColor = 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 hover:bg-emerald-500/30';
                    else if (isPartial) blockColor = 'bg-amber-500/20 border-amber-500/50 text-amber-300 hover:bg-amber-500/30';
                    else if (log) blockColor = 'bg-rose-500/20 border-rose-500/50 text-rose-300 hover:bg-rose-500/30'; // Log exists but 0 tasks
 
@@ -135,7 +134,7 @@ export const Journey = () => {
                        disabled={!log}
                        className={`aspect-square rounded-lg border flex items-center justify-center text-xs font-bold transition-all ${blockColor} ${!log ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer shadow-lg'}`}
                      >
-                       {dayNumber}
+                       {isFrozen ? '❄️' : dayNumber}
                      </button>
                    );
                  })}

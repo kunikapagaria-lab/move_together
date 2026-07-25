@@ -63,6 +63,12 @@ export const api = {
       headers: getHeaders()
     });
   },
+  freezeToday: async () => {
+    return safeFetch(`${API_URL}/challenges/freeze-today`, {
+      method: 'POST',
+      headers: getHeaders()
+    });
+  },
   getAllChallenges: async () => {
     return safeFetch(`${API_URL}/challenges/all`, { headers: getHeaders() });
   },

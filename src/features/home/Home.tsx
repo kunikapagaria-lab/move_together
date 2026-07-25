@@ -322,9 +322,15 @@ export const Home = () => {
         transition={{ duration: 0.6 }}
         className="mb-8"
       >
-        <div className="inline-flex items-center gap-2 bg-white/10 border border-white/10 backdrop-blur-xl px-4 py-1.5 rounded-full text-xs text-white/70 mb-5">
-          <Sparkles className="h-3 w-3 text-violet-300" />
-          Day {streak + 1} of {activeChallenge.durationDays}
+        <div className="flex items-center justify-center gap-2 mb-5 flex-wrap">
+          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/10 backdrop-blur-xl px-4 py-1.5 rounded-full text-xs text-white/70">
+            <Sparkles className="h-3 w-3 text-violet-300" />
+            Day {streak + 1} of {activeChallenge.durationDays}
+          </div>
+
+          <div className="inline-flex items-center gap-1.5 bg-cyan-500/10 border border-cyan-500/30 backdrop-blur-xl px-3 py-1.5 rounded-full text-xs text-cyan-300 font-bold shadow-lg shadow-cyan-950/50">
+            ❄️ {(activeChallenge.freezeDaysAllowed || 5) - (activeChallenge.freezeDaysUsed || 0)}/5 Freezes Left
+          </div>
         </div>
         <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight mb-3">
           Welcome back,<br />

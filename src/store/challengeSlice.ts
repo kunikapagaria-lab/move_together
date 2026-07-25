@@ -6,6 +6,9 @@ export interface Challenge {
   durationDays: number;
   startDate: string;
   tasks: any[];
+  freezeDaysAllowed?: number;
+  freezeDaysUsed?: number;
+  frozenDates?: string[];
   status: 'active' | 'completed' | 'failed' | 'cancelled';
 }
 
@@ -105,6 +108,18 @@ export const updateJournal = createAsyncThunk(
   }
 );
 
+export const freezeToday = createAsyncThunk(
+  'challenge/freezeToday',
+  async (_, thunkAPI) => {
+    try {
+      const res = await api.freezeToday();
+      return res.challenge;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  }
+);
+
 export const challengeSlice = createSlice({
   name: 'challenge',
   initialState,
@@ -171,6 +186,11 @@ export const challengeSlice = createSlice({
         state.todayLog = null;
         state.history = [];
         state.streak = 0;
+      })
+      .addCase(freezeToday.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.activeChallenge = action.payload;
+        }
       });
   }
 });

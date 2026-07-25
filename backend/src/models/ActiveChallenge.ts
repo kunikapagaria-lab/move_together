@@ -13,6 +13,9 @@ const activeChallengeSchema = new mongoose.Schema({
   durationDays: { type: Number, required: true },
   startDate: { type: Date, required: true },
   tasks: [taskSchema],
+  freezeDaysAllowed: { type: Number, default: 5 },
+  freezeDaysUsed: { type: Number, default: 0 },
+  frozenDates: [{ type: String }],
   status: {
     type: String,
     enum: ['active', 'completed', 'failed', 'cancelled'],
