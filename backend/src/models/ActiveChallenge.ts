@@ -18,6 +18,8 @@ const activeChallengeSchema = new mongoose.Schema({
     enum: ['active', 'completed', 'failed', 'cancelled'],
     default: 'active'
   }
+}, { timestamps: true });
+
 activeChallengeSchema.index({ userId: 1, status: 1 });
 
 export default mongoose.model('ActiveChallenge', activeChallengeSchema);
