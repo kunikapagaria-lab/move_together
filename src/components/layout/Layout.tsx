@@ -22,7 +22,7 @@ export const Layout = () => {
   }, [dispatch, user]);
 
   return (
-    <div className="min-h-screen bg-black pb-8">
+    <div className="min-h-screen pb-8">
       <TopNav />
       <main className="w-full">
         <Outlet />

@@ -47,7 +47,7 @@ export const TopNav = () => {
 
   return (
     <>
-      <nav className="w-full bg-black py-4 mb-2">
+      <nav className="w-full py-4 mb-2">
       <div className="max-w-7xl mx-auto px-4 flex items-center justify-between relative">
         
         {/* Brand */}
