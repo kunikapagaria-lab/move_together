@@ -182,7 +182,7 @@ export const Routine = () => {
                     key={cellKey}
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, day, timeRow)}
-                    className="relative min-h-[95px] rounded-2xl border border-white/10 transition-colors bg-white/[0.03] hover:bg-white/[0.08] flex items-center justify-center p-1.5"
+                    className="relative min-h-[95px] rounded-2xl border border-white/15 transition-all bg-white/[0.04] hover:bg-white/[0.12] flex items-center justify-center p-3 text-center cursor-pointer group"
                   >
                     {isEditing ? (
                       /* DIRECT INLINE CELL INPUT FORM */
@@ -197,7 +197,7 @@ export const Routine = () => {
                             if (e.key === 'Enter') handleSaveCell(day, timeRow);
                             if (e.key === 'Escape') setEditingCellKey(null);
                           }}
-                          className="w-full bg-white/10 text-white text-xs font-bold px-2 py-1 rounded-xl border border-white/20 outline-none uppercase placeholder-white/40"
+                          className="w-full bg-white/10 text-white text-xs font-bold px-2 py-1 rounded-xl border border-white/20 outline-none uppercase placeholder-white/40 text-center"
                         />
                         <input
                           type="text"
@@ -208,7 +208,7 @@ export const Routine = () => {
                             if (e.key === 'Enter') handleSaveCell(day, timeRow);
                             if (e.key === 'Escape') setEditingCellKey(null);
                           }}
-                          className="w-full bg-white/10 text-white text-[10px] px-2 py-1 rounded-xl border border-white/20 outline-none placeholder-white/40"
+                          className="w-full bg-white/10 text-white text-[10px] px-2 py-1 rounded-xl border border-white/20 outline-none placeholder-white/40 text-center"
                         />
                         <div className="flex items-center justify-end gap-1 mt-1">
                           <button
@@ -226,21 +226,21 @@ export const Routine = () => {
                         </div>
                       </div>
                     ) : cellData ? (
-                      /* TRANSLUCENT GLASS TASK CARD */
+                      /* DIRECT TEXT WRITTEN INSIDE THE CELL (NO INNER NESTED BOX) */
                       <div
                         draggable
                         onDragStart={(e) => handleDragStart(e, cellData.id)}
                         onClick={() => handleStartEdit(day, timeRow)}
-                        className="w-full h-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 rounded-2xl p-2 sm:p-3 flex flex-col items-center justify-center text-center cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-all shadow-md group relative"
+                        className="w-full h-full flex flex-col items-center justify-center text-center cursor-grab active:cursor-grabbing relative"
                       >
-                        <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <GripVertical className="w-3.5 h-3.5 text-white/50" />
                         </div>
-                        <h4 className="font-extrabold text-white text-xs sm:text-sm uppercase tracking-wide leading-tight drop-shadow-sm">
+                        <h4 className="font-black text-white text-xs sm:text-sm uppercase tracking-wide leading-tight drop-shadow-md">
                           {cellData.title}
                         </h4>
                         {cellData.subtitle && (
-                          <p className="text-[10px] sm:text-xs text-white/70 font-medium mt-1">
+                          <p className="text-[10px] sm:text-xs text-white/80 font-medium mt-1">
                             {cellData.subtitle}
                           </p>
                         )}
@@ -249,7 +249,7 @@ export const Routine = () => {
                       /* EMPTY CELL WITH + ICON */
                       <button
                         onClick={() => handleStartEdit(day, timeRow)}
-                        className="w-full h-full flex flex-col items-center justify-center gap-1 text-white/30 hover:text-white hover:bg-white/10 transition-all rounded-2xl group"
+                        className="w-full h-full flex flex-col items-center justify-center gap-1 text-white/30 hover:text-white transition-all rounded-2xl"
                       >
                         <Plus className="w-4 h-4 text-white/40 group-hover:text-white group-hover:scale-125 transition-all" />
                         <span className="text-[10px] opacity-0 group-hover:opacity-100 transition-opacity uppercase font-mono">Click to Add</span>
