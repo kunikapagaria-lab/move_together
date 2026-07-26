@@ -6,8 +6,7 @@ import { cn } from '../ui/Button';
 import type { RootState, AppDispatch } from '../../store';
 import { logout } from '../../store/authSlice';
 import { toggleZenMode } from '../../store/settingsSlice';
-import { getAthleteRank } from '../../utils/athleteRanks';
-import { AthleteRanksModal } from '../../features/ranks/AthleteRanksModal';
+import { getAthleteRank, ATHLETE_RANKS, type AthleteRank } from '../../utils/athleteRanks';
 
 const navItems = [
   { name: 'Home',      path: '/home',      icon: Home },
@@ -28,7 +27,6 @@ export const TopNav = () => {
   
   const rank = getAthleteRank(streak);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isRankModalOpen, setIsRankModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -94,15 +92,48 @@ export const TopNav = () => {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3 relative" ref={dropdownRef}>
-          {/* Athlete Rank Pill */}
-          <button 
-            onClick={() => setIsRankModalOpen(true)}
-            className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 border border-white/20 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold text-white tracking-widest uppercase transition-all cursor-pointer shadow-md"
-            title="View Rank Roadmap & Locked Tiers"
-          >
-            <span>{rank.badge}</span>
-            <span>{rank.name}</span>
-          </button>
+          {/* Athlete Rank Pill with Hover Tooltip (No Popup Box) */}
+          <div className="relative group">
+            <div 
+              className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 border border-white/20 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold text-white tracking-widest uppercase transition-all cursor-pointer shadow-md"
+            >
+              <span>{rank.badge}</span>
+              <span>{rank.name}</span>
+            </div>
+
+            {/* Rank Tooltip on Hover */}
+            <div className="absolute top-full right-0 mt-2 w-64 bg-black/95 backdrop-blur-2xl border border-white/20 rounded-2xl p-3 shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-200 z-50 text-left">
+              <div className="border-b border-white/10 pb-2 mb-2">
+                <p className="text-xs font-bold text-white uppercase tracking-wider">Athlete Rank Tiers</p>
+                <p className="text-[10px] text-white/60">Active: {rank.badge} {rank.name} ({streak} Days)</p>
+              </div>
+
+              <div className="space-y-1.5">
+                {ATHLETE_RANKS.map((r: AthleteRank) => {
+                  const isCurrent = r.name === rank.name;
+                  return (
+                    <div 
+                      key={r.name}
+                      className={`p-2 rounded-xl border flex items-center justify-between text-xs transition-all ${
+                        isCurrent 
+                          ? 'bg-white/20 border-white text-white font-bold shadow-md' 
+                          : 'bg-white/5 border-white/10 text-white/60'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">{r.badge}</span>
+                        <div>
+                          <p className="font-extrabold text-[11px] text-white">{r.name}</p>
+                          <p className="text-[9px] text-white/50">{r.minStreak}-{r.maxStreak === 999 ? '75+' : r.maxStreak} Days</p>
+                        </div>
+                      </div>
+                      {isCurrent && <span className="text-[9px] bg-white text-black font-extrabold px-1.5 py-0.5 rounded-full">CURRENT</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
 
           {/* Profile Dropdown Toggle */}
           <button
@@ -189,12 +220,6 @@ export const TopNav = () => {
         );
       })}
     </div>
-
-    <AthleteRanksModal 
-      isOpen={isRankModalOpen} 
-      onClose={() => setIsRankModalOpen(false)} 
-      currentStreak={streak} 
-    />
   </>
 );
 };

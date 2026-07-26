@@ -344,8 +344,7 @@ export const Home = () => {
 
       {/* Athlete Rank Progress Card (Bento Box matching user screenshot) */}
       <div 
-        onClick={() => setIsRankModalOpen(true)}
-        className="w-full bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 text-left mb-6 relative overflow-hidden cursor-pointer group transition-all shadow-xl hover:bg-white/[0.15]"
+        className="w-full bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 text-left mb-6 relative overflow-hidden transition-all shadow-xl hover:bg-white/[0.15]"
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-4">
@@ -360,7 +359,7 @@ export const Home = () => {
                 <span className="text-xs text-white/70 font-medium">Day In - Active</span>
               </div>
               <p className="text-xs sm:text-sm text-white/90 font-medium">
-                Building foundation and consistency daily habits. <span className="underline font-bold text-white group-hover:text-white/90">View the Roadmap &rarr;</span>
+                Building foundation and consistency daily habits.
               </p>
             </div>
           </div>
