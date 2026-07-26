@@ -328,9 +328,6 @@ export const Home = () => {
       >
         <div className="flex items-center justify-center gap-2 mb-6 flex-wrap">
           <span className="text-xs text-white/90 font-medium">Sunday · July 26, 2026</span>
-          <span className="inline-flex items-center gap-1.5 bg-white/20 border border-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs text-white font-bold shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> GP Powered LLM
-          </span>
         </div>
         
         <h1 
