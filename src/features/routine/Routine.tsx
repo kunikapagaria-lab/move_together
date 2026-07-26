@@ -101,12 +101,12 @@ export const Routine = () => {
             Weekly Routine Timetable
           </h1>
           <p className="text-xs sm:text-sm text-white/80 mt-1 max-w-xl">
-            Click directly on any card to edit. Drag and drop task blocks between days to re-arrange your weekly routine.
+            Click directly on any card to edit text. Drag and drop task blocks between days to re-arrange your weekly routine.
           </p>
         </div>
       </div>
 
-      {/* CLEAN 7-DAY WEEKLY ROUTINE BOARD (NO SIDE TIME COLUMN) */}
+      {/* CLEAN 7-DAY WEEKLY ROUTINE BOARD */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-3 sm:gap-4 w-full">
         {DAYS.map(day => {
           const dayCells = cells.filter(c => c.day === day);
@@ -130,48 +130,34 @@ export const Routine = () => {
                     const isEditing = editingCellId === cell.id;
 
                     return isEditing ? (
-                      /* INLINE EDIT FORM */
-                      <div key={cell.id} className="bg-black/90 backdrop-blur-2xl border-2 border-white rounded-2xl p-2.5 flex flex-col gap-2 shadow-2xl z-20">
+                      /* SEAMLESS IN-PLACE GLASS EDITING (NO BLACK BOX, NO SAVE/CANCEL BUTTONS) */
+                      <div key={cell.id} className="bg-white/25 backdrop-blur-md border border-white/40 rounded-2xl p-3 text-center shadow-lg relative">
                         <input
                           type="text"
                           value={editTitle}
                           onChange={e => setEditTitle(e.target.value)}
-                          placeholder="Task (e.g. YOGA)"
+                          placeholder="TASK (e.g. YOGA)"
                           autoFocus
                           onKeyDown={e => {
                             if (e.key === 'Enter') handleSaveEdit(cell);
                             if (e.key === 'Escape') setEditingCellId(null);
                           }}
-                          className="w-full bg-white/10 text-white text-xs font-bold px-2.5 py-1.5 rounded-xl border border-white/20 outline-none uppercase text-center"
+                          className="w-full bg-transparent text-white font-black text-xs sm:text-sm uppercase tracking-wide leading-tight text-center outline-none border-b border-white/40 focus:border-white pb-0.5 placeholder-white/40"
                         />
                         <input
                           type="text"
                           value={editSubtitle}
                           onChange={e => setEditSubtitle(e.target.value)}
-                          placeholder="Time (e.g. 5:00am-7:00am)"
+                          placeholder="Time (e.g. 5:00am - 7:00am)"
                           onKeyDown={e => {
                             if (e.key === 'Enter') handleSaveEdit(cell);
                             if (e.key === 'Escape') setEditingCellId(null);
                           }}
-                          className="w-full bg-white/10 text-white text-[10px] px-2 py-1 rounded-xl border border-white/20 outline-none text-center"
+                          className="w-full bg-transparent text-white/80 font-medium text-[10px] sm:text-xs text-center outline-none border-b border-white/20 focus:border-white mt-1.5 placeholder-white/30"
                         />
-                        <div className="flex items-center justify-end gap-1.5 mt-1">
-                          <button
-                            onClick={() => setEditingCellId(null)}
-                            className="text-[10px] bg-white/10 text-white px-2 py-1 rounded-lg"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={() => handleSaveEdit(cell)}
-                            className="text-[10px] bg-white text-black font-bold px-2.5 py-1 rounded-lg shadow-sm"
-                          >
-                            Save
-                          </button>
-                        </div>
                       </div>
                     ) : (
-                      /* CARD DIRECTLY INSIDE COLUMN (NO INNER NESTED BOX) */
+                      /* NORMAL CARD UI */
                       <div
                         key={cell.id}
                         draggable
@@ -210,44 +196,31 @@ export const Routine = () => {
               {/* + ADD TASK BUTTON AT BOTTOM OF EACH COLUMN */}
               <div className="mt-3">
                 {addingDay === day ? (
-                  <div className="bg-black/90 backdrop-blur-2xl border-2 border-white rounded-2xl p-2.5 flex flex-col gap-2 shadow-2xl">
+                  /* SEAMLESS IN-PLACE ADD TASK FORM (NO BLACK BOX) */
+                  <div className="bg-white/20 backdrop-blur-md border border-white/40 rounded-2xl p-3 text-center shadow-lg relative">
                     <input
                       type="text"
                       value={newTitle}
                       onChange={e => setNewTitle(e.target.value)}
-                      placeholder="Task Name (e.g. GYM)"
+                      placeholder="TASK (e.g. GYM)"
                       autoFocus
                       onKeyDown={e => {
                         if (e.key === 'Enter') handleAddNewTask(day);
                         if (e.key === 'Escape') setAddingDay(null);
                       }}
-                      className="w-full bg-white/10 text-white text-xs font-bold px-2.5 py-1.5 rounded-xl border border-white/20 outline-none uppercase text-center"
+                      className="w-full bg-transparent text-white font-black text-xs sm:text-sm uppercase tracking-wide leading-tight text-center outline-none border-b border-white/40 focus:border-white pb-0.5 placeholder-white/40"
                     />
                     <input
                       type="text"
                       value={newSubtitle}
                       onChange={e => setNewSubtitle(e.target.value)}
-                      placeholder="Time Range (e.g. 8:00am-10:00am)"
+                      placeholder="Time (e.g. 8:00am - 10:00am)"
                       onKeyDown={e => {
                         if (e.key === 'Enter') handleAddNewTask(day);
                         if (e.key === 'Escape') setAddingDay(null);
                       }}
-                      className="w-full bg-white/10 text-white text-[10px] px-2 py-1 rounded-xl border border-white/20 outline-none text-center"
+                      className="w-full bg-transparent text-white/80 font-medium text-[10px] sm:text-xs text-center outline-none border-b border-white/20 focus:border-white mt-1.5 placeholder-white/30"
                     />
-                    <div className="flex items-center justify-end gap-1.5 mt-1">
-                      <button
-                        onClick={() => setAddingDay(null)}
-                        className="text-[10px] bg-white/10 text-white px-2 py-1 rounded-lg"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={() => handleAddNewTask(day)}
-                        className="text-[10px] bg-white text-black font-bold px-2.5 py-1 rounded-lg shadow-sm"
-                      >
-                        Add Task
-                      </button>
-                    </div>
                   </div>
                 ) : (
                   <button
