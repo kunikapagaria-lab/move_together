@@ -79,6 +79,13 @@ export const Friends = () => {
           />
         </div>
 
+        {/* Self-search Notice */}
+        {searchQuery.trim().toLowerCase() === user?.email?.toLowerCase() && (
+          <div className="mt-3 p-3 bg-white/10 border border-white/20 rounded-xl text-xs text-white/80 font-medium">
+            💡 This is your logged-in account (You). Your friends on other accounts can search for <span className="font-bold text-white">{user?.email}</span> to send you a friend request!
+          </div>
+        )}
+
         {searchResults.length > 0 && (
           <div className="space-y-2 mt-4">
             <h3 className="text-xs font-bold text-white/40 uppercase tracking-widest mb-3">Search Results</h3>
