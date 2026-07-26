@@ -4,15 +4,8 @@
 
 @layer base {
   body {
-    @apply antialiased min-h-screen text-slate-900;
+    @apply text-white antialiased selection:bg-white selection:text-black bg-black;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background: radial-gradient(at 0% 100%, rgba(249, 115, 22, 0.75) 0px, transparent 55%),
-                radial-gradient(at 50% 65%, rgba(192, 132, 252, 0.65) 0px, transparent 55%),
-                radial-gradient(at 100% 0%, rgba(147, 197, 253, 0.85) 0px, transparent 55%),
-                radial-gradient(at 100% 100%, rgba(186, 230, 253, 0.8) 0px, transparent 55%),
-                radial-gradient(at 0% 0%, rgba(254, 243, 199, 0.9) 0px, transparent 55%),
-                #e2e8f0;
-    background-attachment: fixed;
   }
 }
 
@@ -22,15 +15,15 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 8px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(255, 255, 255, 0.4);
 }

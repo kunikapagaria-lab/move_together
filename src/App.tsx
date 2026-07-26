@@ -17,7 +17,7 @@ function App() {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen text-white bg-black relative">
       <NotificationsModal />
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>

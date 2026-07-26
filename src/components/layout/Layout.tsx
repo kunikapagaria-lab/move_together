@@ -22,7 +22,7 @@ export const Layout = () => {
   }, [dispatch, user]);
 
   return (
-    <div className="min-h-screen pb-8">
+    <div className="min-h-screen bg-gradient-to-b from-[#b54619] via-[#85300d] to-[#481604] text-white pb-12 transition-colors duration-500">
       <TopNav />
       <main className="w-full">
         <Outlet />

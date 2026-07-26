@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, LayoutDashboard, Users, Volume2, VolumeX, User, LogOut, Key, Camera, Book, Flame } from 'lucide-react';
+import { Home, LayoutDashboard, Users, Volume2, VolumeX, User, LogOut, Key, Camera, Book } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { cn } from '../ui/Button';
 import type { RootState, AppDispatch } from '../../store';
@@ -47,23 +47,22 @@ export const TopNav = () => {
 
   return (
     <>
-      <nav className="w-full py-4 mb-2">
-      <div className="max-w-7xl mx-auto px-4 flex items-center justify-between relative">
+      <nav className="w-full py-6 px-4 md:px-8">
+      <div className="max-w-7xl mx-auto flex items-center justify-between relative">
         
         {/* Brand */}
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/home')}>
-          <div className="bg-white/10 border border-white/20 rounded-xl p-1.5">
-            <Flame className="h-5 w-5 text-white" />
+        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/home')}>
+          <div className="h-10 w-10 bg-white/20 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center text-xl shadow-md">
+            🏃
           </div>
-          <span className="text-white font-black tracking-tight text-lg">MOVE TOGETHER</span>
+          <span className="text-white font-black tracking-wider text-xl uppercase font-sans">MOVE TOGETHER</span>
         </div>
 
-        {/* Center Nav (Seamless integration without heavy container box) */}
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1 sm:gap-2">
+        {/* Center Nav */}
+        <div className="hidden md:flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-1.5 shadow-inner">
           {navItems.map((item) => {
             let hasBadge = false;
             
-            // Badge logic for Friends tab
             if (item.name === 'Friends') {
               const pendingRequests = friends.filter(f => f.status === 'pending' && f.recipient._id === user?._id).length;
               const pendingInvites = notifications.filter(n => n.type === 'group_invite' && !n.read).length;
@@ -75,48 +74,41 @@ export const TopNav = () => {
                 key={item.path}
                 to={item.path}
                 className={({ isActive }) => cn(
-                  "relative flex items-center justify-center px-3 py-2 rounded-xl text-sm font-bold transition-all duration-200",
+                  "relative flex items-center justify-center px-5 py-2 rounded-xl text-sm font-bold transition-all duration-200",
                   isActive 
-                    ? "text-white bg-white/10" 
-                    : "text-white/50 hover:text-white hover:bg-white/5"
+                    ? "text-white bg-white/20 shadow-md border border-white/20" 
+                    : "text-white/70 hover:text-white hover:bg-white/10"
                 )}
               >
-                {({ isActive }) => (
-                  <>
-                    <item.icon className={cn(
-                      "h-4 w-4 sm:mr-2",
-                      isActive ? "text-white" : ""
-                    )} />
-                    <span className="hidden sm:block tracking-wide">{item.name}</span>
-                    
-                    {/* Notification Badge */}
-                    {hasBadge && (
-                      <span className="absolute top-1 right-1 sm:top-2 sm:right-2 w-2 h-2 bg-white rounded-full shadow-[0_0_8px_rgba(255,255,255,0.8)] animate-pulse" />
-                    )}
-                  </>
-                )}
+                <>
+                  <span className="tracking-wide">{item.name}</span>
+                  
+                  {hasBadge && (
+                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-white rounded-full shadow-sm animate-pulse" />
+                  )}
+                </>
               </NavLink>
             );
           })}
         </div>
 
-        <div className="flex items-center gap-2 relative" ref={dropdownRef}>
+        <div className="flex items-center gap-3 relative" ref={dropdownRef}>
           {/* Athlete Rank Pill */}
           <button 
             onClick={() => setIsRankModalOpen(true)}
-            className="hidden sm:flex items-center gap-1.5 bg-black hover:bg-white/10 border border-white/20 px-3 py-1 rounded-full text-xs font-bold text-white transition-all cursor-pointer group relative"
+            className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 border border-white/20 px-4 py-2 rounded-full text-xs font-bold text-white tracking-widest uppercase transition-all cursor-pointer shadow-md"
             title="View Rank Roadmap & Locked Tiers"
           >
             <span>{rank.badge}</span>
-            <span className="text-white font-bold group-hover:underline">{rank.name}</span>
+            <span>{rank.name}</span>
           </button>
 
           {/* Profile Dropdown Toggle */}
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center justify-center h-9 w-9 rounded-full bg-white text-black font-bold text-sm hover:bg-white/90 transition-all cursor-pointer"
+            className="flex items-center justify-center h-10 w-10 rounded-full bg-white/20 hover:bg-white/30 border border-white/30 text-white font-bold text-sm shadow-md transition-all cursor-pointer"
           >
-            {user?.displayName?.charAt(0).toUpperCase() || <User className="h-4 w-4" />}
+            {user?.displayName?.charAt(0).toUpperCase() || <User className="h-5 w-5" />}
           </button>
 
           {/* Dropdown Menu */}

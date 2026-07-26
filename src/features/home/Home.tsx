@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Flame, CheckSquare, Users, Sparkles, Plus, Trash2, XCircle, ArrowLeft, Zap, Trophy, ShieldCheck } from 'lucide-react';
+import { Users, Sparkles, Plus, Trash2, XCircle, ArrowLeft, Trophy, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../store';
@@ -9,7 +9,7 @@ import { fetchMyGroups } from '../../store/groupSlice';
 import { fetchFriends } from '../../store/friendSlice';
 import { PRESET_TEMPLATES } from '../../data/presetTemplates';
 import type { ChallengePreset } from '../../data/presetTemplates';
-import { getAthleteRank, getNextRankProgress } from '../../utils/athleteRanks';
+import { getAthleteRank } from '../../utils/athleteRanks';
 import { WearableSyncModal } from '../integrations/WearableSyncModal';
 import { AthleteRanksModal } from '../ranks/AthleteRanksModal';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
@@ -59,7 +59,6 @@ export const Home = () => {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
 
   const rank = getAthleteRank(streak);
-  const rankProgress = getNextRankProgress(streak);
 
   useEffect(() => {
     dispatch(fetchChallengeData());
@@ -325,103 +324,114 @@ export const Home = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="mb-8"
+        className="mb-10"
       >
-        <div className="flex items-center justify-center gap-2 mb-5 flex-wrap">
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-xl px-4 py-1.5 rounded-full text-xs text-white">
-            <Sparkles className="h-3 w-3 text-white" />
-            Day {streak + 1} of {activeChallenge.durationDays}
-          </div>
-
-          <div className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 backdrop-blur-xl px-3 py-1.5 rounded-full text-xs text-white font-bold">
-            ❄️ {(activeChallenge.freezeDaysAllowed || 5) - (activeChallenge.freezeDaysUsed || 0)}/5 Freezes Left
-          </div>
+        <div className="flex items-center justify-center gap-2 mb-6 flex-wrap">
+          <span className="text-xs text-white/90 font-medium">Sunday · July 26, 2026</span>
+          <span className="inline-flex items-center gap-1.5 bg-white/20 border border-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs text-white font-bold shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> GP Powered LLM
+          </span>
         </div>
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight mb-3">
+        
+        <h1 
+          style={{ fontFamily: "'Oswald', sans-serif" }} 
+          className="text-6xl sm:text-7xl font-black text-white tracking-tight leading-none mb-4 uppercase drop-shadow-md"
+        >
           Welcome back,<br />
-          <span className="text-white font-extrabold">{user?.displayName} 👋</span>
+          <span className="text-white drop-shadow-lg">{user?.displayName} 👋</span>
         </h1>
-        <p className="text-xs text-white/70 max-w-xs mx-auto leading-relaxed italic">
-          "{quote}"
+        <p className="text-sm sm:text-base text-white/80 max-w-sm mx-auto font-medium tracking-wide">
+          Keep showing up. Every rep counts.
         </p>
       </motion.div>
 
-      {/* Athlete Rank Progress Card */}
+      {/* Athlete Rank Progress Card (Bento Box matching user screenshot) */}
       <div 
         onClick={() => setIsRankModalOpen(true)}
-        className="w-full bg-black border border-white/20 rounded-2xl p-5 text-left mb-6 relative overflow-hidden cursor-pointer group transition-all"
+        className="w-full bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 text-left mb-6 relative overflow-hidden cursor-pointer group transition-all shadow-xl hover:bg-white/[0.15]"
       >
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">{rank.badge}</span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 bg-white/15 border border-white/20 rounded-2xl flex items-center justify-center text-3xl shadow-inner shrink-0">
+              🌱
+            </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-extrabold text-white text-lg tracking-tight flex items-center gap-1.5">
-                  {rank.name} <Trophy className="w-4 h-4 text-white opacity-80" />
-                </h3>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/10 border border-white/20 text-white font-bold">
-                  Day {streak} Active
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full border border-white/30 bg-white/10 text-white uppercase tracking-wider">
+                  {rank.name}
                 </span>
+                <span className="text-xs text-white/70 font-medium">Day In - Active</span>
               </div>
-              <p className="text-xs text-white/60">{rank.description} <span className="text-white text-[10px] underline ml-1 font-bold">View Tier Roadmap &rarr;</span></p>
+              <p className="text-xs sm:text-sm text-white/90 font-medium">
+                Building foundation and consistency daily habits. <span className="underline font-bold text-white group-hover:text-white/90">View the Roadmap &rarr;</span>
+              </p>
             </div>
           </div>
 
           <button 
             onClick={(e) => { e.stopPropagation(); setIsSyncModalOpen(true); }}
-            className="hidden sm:flex items-center gap-1.5 bg-white hover:bg-white/90 text-black font-bold text-xs px-3 py-2 rounded-xl shadow-lg transition-all z-10"
+            className="self-start sm:self-center flex items-center gap-2 bg-white/20 hover:bg-white/30 border border-white/30 text-white font-bold text-xs px-4 py-2.5 rounded-2xl shadow-md transition-all shrink-0 cursor-pointer"
           >
-            <Zap className="w-4 h-4 text-black" /> Wearable Sync
+            <span>⏱</span> Wearable Sync
           </button>
         </div>
 
-        {/* Level Up Progress Bar */}
-        {rankProgress.nextRank && (
-          <div>
-            <div className="flex justify-between items-center text-[11px] text-white/50 mb-1 font-mono">
-              <span>Progress to {rankProgress.nextRank.badge} {rankProgress.nextRank.name}</span>
-              <span>{rankProgress.daysLeft} days remaining</span>
-            </div>
-            <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden border border-white/10">
-              <div 
-                className="h-full bg-white rounded-full transition-all duration-500"
-                style={{ width: `${rankProgress.progressPct}%` }}
-              />
-            </div>
+        {/* Progress bar */}
+        <div>
+          <div className="flex justify-between items-center text-xs text-white/80 mb-1.5 font-medium">
+            <span>Progress · {streak} / {activeChallenge.durationDays} days</span>
+            <span className="font-bold">{Math.round((streak / activeChallenge.durationDays) * 100)}%</span>
           </div>
-        )}
-
-        <button 
-          onClick={() => setIsSyncModalOpen(true)}
-          className="sm:hidden w-full mt-3 flex items-center justify-center gap-1.5 bg-white hover:bg-white/90 text-black font-bold text-xs py-2 rounded-xl shadow-lg transition-all"
-        >
-          <Zap className="w-4 h-4 text-black" /> Wearable Sync
-        </button>
+          <div className="w-full h-2.5 bg-black/20 rounded-full overflow-hidden border border-white/10 p-0.5">
+            <div 
+              className="h-full bg-gradient-to-r from-amber-200 to-amber-100 rounded-full transition-all duration-500 shadow-sm"
+              style={{ width: `${Math.min(100, Math.round((streak / activeChallenge.durationDays) * 100))}%` }}
+            />
+          </div>
+        </div>
       </div>
 
-      {/* Main Stats */}
+      {/* 4 Bento Stat Cards matching user screenshot */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full mb-8">
-        <div className="bg-black border border-white/20 rounded-2xl p-4 flex flex-col items-center justify-center">
-          <Flame className="h-6 w-6 text-white mb-2" />
-          <p className="text-3xl font-black text-white">{streak}</p>
-          <p className="text-[10px] text-white/50 uppercase tracking-widest font-bold">Streak</p>
-        </div>
-        <div className="bg-black border border-white/20 rounded-2xl p-4 flex flex-col items-center justify-center">
-          <CheckSquare className="h-6 w-6 text-white mb-2" />
-          <p className="text-3xl font-black text-white">{completedCount}/{totalCount}</p>
-          <p className="text-[10px] text-white/50 uppercase tracking-widest font-bold">Today</p>
-        </div>
-        <div className="bg-black border border-white/20 rounded-2xl p-4 flex flex-col items-center justify-center relative overflow-hidden group hover:border-white/50 transition-colors cursor-pointer" onClick={() => navigate('/dashboard')}>
-          <div className="relative z-10 flex flex-col items-center justify-center text-center">
-            <p className="text-sm md:text-base font-bold text-white mb-1">Log Tasks</p>
-            <p className="text-[10px] text-white/80 font-bold uppercase tracking-widest">Dashboard &rarr;</p>
+        {/* Card 1: Streak */}
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-5 flex flex-col justify-between items-start text-left min-h-[130px] shadow-lg">
+          <span className="text-2xl mb-2">🔥</span>
+          <div>
+            <p className="text-4xl font-black text-white leading-none mb-1">{streak}</p>
+            <p className="text-[11px] text-white/70 uppercase tracking-widest font-bold">STREAK</p>
           </div>
         </div>
-        <div className="bg-black/40 border border-white/10 shadow-xl rounded-2xl p-4 flex flex-col items-center justify-center relative overflow-hidden group hover:border-emerald-500/50 transition-colors cursor-pointer" onClick={() => navigate('/progress')}>
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 z-0" />
-          <div className="relative z-10 flex flex-col items-center justify-center text-center">
-            <p className="text-sm md:text-base font-bold text-white mb-1">View Stats</p>
-            <p className="text-[10px] text-emerald-300 font-bold uppercase tracking-widest">Progress &rarr;</p>
+
+        {/* Card 2: Today */}
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-5 flex flex-col justify-between items-start text-left min-h-[130px] shadow-lg">
+          <span className="text-xl mb-2 bg-emerald-400 text-black font-bold p-1 rounded-lg flex items-center justify-center h-7 w-7">✓</span>
+          <div>
+            <p className="text-4xl font-black text-white leading-none mb-1">{completedCount}/{totalCount}</p>
+            <p className="text-[11px] text-white/70 uppercase tracking-widest font-bold">TODAY</p>
+          </div>
+        </div>
+
+        {/* Card 3: Log Tasks */}
+        <div 
+          className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-5 flex flex-col justify-between items-start text-left min-h-[130px] shadow-lg hover:bg-white/[0.15] transition-colors cursor-pointer group"
+          onClick={() => navigate('/dashboard')}
+        >
+          <span className="text-2xl mb-2">📋</span>
+          <div>
+            <p className="text-base font-extrabold text-white leading-tight mb-0.5">Log Tasks</p>
+            <p className="text-[11px] text-white/70 font-bold tracking-wide group-hover:underline">Dashboard &rarr;</p>
+          </div>
+        </div>
+
+        {/* Card 4: View Stats */}
+        <div 
+          className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-5 flex flex-col justify-between items-start text-left min-h-[130px] shadow-lg hover:bg-white/[0.15] transition-colors cursor-pointer group"
+          onClick={() => navigate('/progress')}
+        >
+          <span className="text-2xl mb-2">📊</span>
+          <div>
+            <p className="text-base font-extrabold text-white leading-tight mb-0.5">View Stats</p>
+            <p className="text-[11px] text-white/70 font-bold tracking-wide group-hover:underline">Weekly &rarr;</p>
           </div>
         </div>
       </div>
