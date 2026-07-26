@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store';
-import { loginStart, loginSuccess } from '../../store/authSlice';
+import { loginStart, loginSuccess, loginFailure } from '../../store/authSlice';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import { useToast } from '../ui/Toast';
@@ -14,7 +14,7 @@ const Auth = () => {
   
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { showSuccess } = useToast();
+  const { showError, showSuccess } = useToast();
   const { isLoading } = useSelector((state: RootState) => state.auth);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,53 +27,22 @@ const Auth = () => {
     try {
       let data;
       if (isLogin) {
-        try {
-          data = await api.login({ email: cleanEmail, password });
-        } catch (loginErr: any) {
-          // If login failed, attempt registering or log in with fallback
-          try {
-            data = await api.register({ email: cleanEmail, password, displayName: cleanName });
-          } catch (_) {
-            data = {
-              _id: 'user_' + Date.now(),
-              displayName: cleanName,
-              email: cleanEmail,
-              token: 'token_' + Date.now()
-            };
-          }
-        }
+        data = await api.login({ email: cleanEmail, password });
       } else {
-        try {
-          data = await api.register({ email: cleanEmail, password, displayName: cleanName });
-        } catch (regErr: any) {
-          // If account already exists during registration, attempt logging in with entered password
-          try {
-            data = await api.login({ email: cleanEmail, password });
-          } catch (_) {
-            data = {
-              _id: 'user_' + Date.now(),
-              displayName: cleanName,
-              email: cleanEmail,
-              token: 'token_' + Date.now()
-            };
-          }
-        }
+        data = await api.register({ email: cleanEmail, password, displayName: cleanName });
       }
 
       dispatch(loginSuccess(data));
-      showSuccess('Welcome to MOVE TOGETHER! 🏃');
+      showSuccess(isLogin ? 'Welcome back!' : 'Account created in Cloud Database! 🏃');
       navigate('/dashboard');
     } catch (err: any) {
-      const fallbackUser = {
-        _id: 'user_' + Date.now(),
-        displayName: cleanName,
-        email: cleanEmail,
-        token: 'token_' + Date.now()
-      };
-      
-      dispatch(loginSuccess(fallbackUser));
-      showSuccess('Welcome to MOVE TOGETHER! 🏃');
-      navigate('/dashboard');
+      const errorMsg = err.message || 'Authentication failed. Please check your details.';
+      dispatch(loginFailure(errorMsg));
+      showError(errorMsg);
+
+      if (errorMsg.toLowerCase().includes('already exists')) {
+        setIsLogin(true);
+      }
     }
   };
 
