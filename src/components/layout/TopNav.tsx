@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, LayoutDashboard, Users, Volume2, VolumeX, User, LogOut, Key, Camera, Book } from 'lucide-react';
+import { Home, LayoutDashboard, Users, Volume2, VolumeX, User, LogOut, Key, Camera, Book, Calendar } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { cn } from '../ui/Button';
 import type { RootState, AppDispatch } from '../../store';
@@ -13,6 +13,7 @@ const navItems = [
   { name: 'Home',      path: '/home',      icon: Home },
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
   { name: 'Friends',   path: '/friends',   icon: Users },
+  { name: 'Routine',   path: '/routine',   icon: Calendar },
   { name: 'Journey',   path: '/journey',   icon: Book },
 ];
 

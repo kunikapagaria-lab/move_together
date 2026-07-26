@@ -6,6 +6,7 @@ import groupReducer from './groupSlice';
 import friendReducer from './friendSlice';
 import historyReducer from './historySlice';
 import notificationReducer from './notificationSlice';
+import routineReducer from './routineSlice';
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +17,7 @@ export const store = configureStore({
     friend: friendReducer,
     history: historyReducer,
     notification: notificationReducer,
+    routine: routineReducer,
   },
 });
 

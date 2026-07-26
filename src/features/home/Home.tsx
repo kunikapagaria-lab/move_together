@@ -436,6 +436,35 @@ export const Home = () => {
         </div>
       </div>
 
+      {/* Weekly Routine & Timetable Banner Card */}
+      <div 
+        onClick={() => navigate('/routine')}
+        className="w-full bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-5 sm:p-6 text-left mb-8 relative overflow-hidden cursor-pointer group transition-all shadow-xl hover:bg-white/[0.15]"
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-white/15 border border-white/20 rounded-2xl flex items-center justify-center text-2xl shadow-inner shrink-0">
+              📅
+            </div>
+            <div>
+              <span className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border border-white/30 bg-white/10 text-white uppercase tracking-wider mb-1 inline-block">
+                Weekly Timetable
+              </span>
+              <h3 className="font-extrabold text-white text-lg tracking-tight">
+                Daily Time-Blocking Routine
+              </h3>
+              <p className="text-xs text-white/70">
+                Structure your day hour by hour. <span className="underline font-bold text-white group-hover:text-white">View & Edit Schedule &rarr;</span>
+              </p>
+            </div>
+          </div>
+
+          <div className="hidden sm:flex items-center gap-2 bg-white/20 border border-white/30 text-white font-bold text-xs px-4 py-2 rounded-2xl shadow-md">
+            <span>⏱</span> Routine Planner
+          </div>
+        </div>
+      </div>
+
       {/* Athletic Crew Leaderboard */}
       {group ? (
         <div className="w-full bg-black/40 backdrop-blur-xl border border-white/10 shadow-xl rounded-2xl p-5 text-left mb-8 relative overflow-hidden cursor-pointer hover:border-indigo-500/30 transition-all" onClick={() => navigate('/friends')}>

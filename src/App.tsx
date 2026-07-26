@@ -9,6 +9,7 @@ import { Friends } from './features/friends/Friends';
 import { Journey } from './features/journey/Journey';
 import { Progress } from './features/progress/Progress';
 import { Achievements } from './features/progress/Achievements';
+import { Routine } from './features/routine/Routine';
 import { Layout } from './components/layout/Layout';
 import { PageTransition } from './components/layout/PageTransition';
 import { NotificationsModal } from './features/notifications/NotificationsModal';
@@ -45,6 +46,7 @@ function App() {
             <Route path="/home" element={<PageTransition><Home /></PageTransition>} />
             <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />
             <Route path="/friends" element={<PageTransition><Friends /></PageTransition>} />
+            <Route path="/routine" element={<PageTransition><Routine /></PageTransition>} />
             <Route path="/progress" element={<PageTransition><Progress /></PageTransition>} />
             <Route path="/journey" element={<PageTransition><Journey /></PageTransition>} />
             <Route path="/achievements" element={<PageTransition><Achievements /></PageTransition>} />
