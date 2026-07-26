@@ -1,126 +1,132 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-export interface RoutineSlot {
+export interface TimetableCell {
   id: string;
   day: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
-  time: string; // e.g. "06:30 AM"
-  title: string;
-  taskId?: string; // Optional link to task (e.g. 't1')
-  note?: string;
+  timeRow: string; // e.g. "5:00 AM", "8:00 AM", "13:00 PM", "15:00 PM", "17:00 PM", "19:00 PM", "21:00 PM"
+  title: string; // e.g. "YOGA"
+  subtitle?: string; // e.g. "5:00am - 7:00am"
 }
 
 interface RoutineState {
-  slots: RoutineSlot[];
+  cells: TimetableCell[];
+  timeRows: string[];
 }
 
-const DEFAULT_ROUTINE: RoutineSlot[] = [
-  // Monday
-  { id: 'r1', day: 'Monday', time: '06:30 AM', title: 'Outdoor Workout / Walk', taskId: 't2', note: '45 mins outdoor cardio' },
-  { id: 'r2', day: 'Monday', time: '08:00 AM', title: 'Protein & Fibre Breakfast', taskId: 't3', note: 'Clean nutrition prep' },
-  { id: 'r3', day: 'Monday', time: '01:00 PM', title: 'Hydration & Water Goal', taskId: 't7', note: 'Drink 2L water' },
-  { id: 'r4', day: 'Monday', time: '05:30 PM', title: 'Weight Training / Gym', taskId: 't1', note: '45 mins gym session' },
-  { id: 'r5', day: 'Monday', time: '09:30 PM', title: 'Read 10-15 Pages & Journal', taskId: 't5', note: 'Mindset & reflection' },
-  
-  // Tuesday
-  { id: 'r6', day: 'Tuesday', time: '06:30 AM', title: 'Outdoor Workout / Walk', taskId: 't2' },
-  { id: 'r7', day: 'Tuesday', time: '05:30 PM', title: 'Strength Workout', taskId: 't1' },
-  { id: 'r8', day: 'Tuesday', time: '09:30 PM', title: 'Read & Log Progress Photo', taskId: 't8' },
-
-  // Wednesday
-  { id: 'r9', day: 'Wednesday', time: '06:30 AM', title: 'Morning Cardio', taskId: 't2' },
-  { id: 'r10', day: 'Wednesday', time: '05:30 PM', title: 'Gym Session', taskId: 't1' },
-  { id: 'r11', day: 'Wednesday', time: '09:30 PM', title: 'Reading & Wind Down', taskId: 't5' },
-
-  // Thursday
-  { id: 'r12', day: 'Thursday', time: '06:30 AM', title: 'Outdoor Walk', taskId: 't2' },
-  { id: 'r13', day: 'Thursday', time: '05:30 PM', title: 'Weight Training', taskId: 't1' },
-
-  // Friday
-  { id: 'r14', day: 'Friday', time: '06:30 AM', title: 'Morning Run / Walk', taskId: 't2' },
-  { id: 'r15', day: 'Friday', time: '05:30 PM', title: 'Gym Session', taskId: 't1' },
-
-  // Saturday
-  { id: 'r16', day: 'Saturday', time: '07:30 AM', title: 'Weekend Outdoor Hike / Run', taskId: 't2' },
-  { id: 'r17', day: 'Saturday', time: '04:00 PM', title: 'Home Workout / Gym', taskId: 't1' },
-
-  // Sunday
-  { id: 'r18', day: 'Sunday', time: '08:00 AM', title: 'Active Recovery Walk', taskId: 't2' },
-  { id: 'r19', day: 'Sunday', time: '05:00 PM', title: 'Weekly Prep & Stretch', taskId: 't6' },
+const DEFAULT_TIME_ROWS = [
+  '5:00 AM',
+  '8:00 AM',
+  '11:00 AM',
+  '13:00 PM',
+  '15:00 PM',
+  '17:00 PM',
+  '19:00 PM',
+  '21:00 PM'
 ];
 
-const loadInitialRoutine = (): RoutineSlot[] => {
+const DEFAULT_CELLS: TimetableCell[] = [
+  { id: 'c1', day: 'Monday', timeRow: '5:00 AM', title: 'YOGA', subtitle: '5:00am - 7:00am' },
+  { id: 'c2', day: 'Wednesday', timeRow: '5:00 AM', title: 'CYCLING', subtitle: '5:00am - 7:00am' },
+  { id: 'c3', day: 'Thursday', timeRow: '5:00 AM', title: 'RUNNING', subtitle: '5:00am - 7:00am' },
+  { id: 'c4', day: 'Saturday', timeRow: '5:00 AM', title: 'MARTIAL ARTS', subtitle: '5:00am - 7:00am' },
+  
+  { id: 'c5', day: 'Tuesday', timeRow: '8:00 AM', title: 'GYM', subtitle: '8:00am - 10:00am' },
+  { id: 'c6', day: 'Thursday', timeRow: '8:00 AM', title: 'YOGA', subtitle: '8:00am - 10:00am' },
+  { id: 'c7', day: 'Sunday', timeRow: '8:00 AM', title: 'RUNNING', subtitle: '8:00am - 10:00am' },
+  
+  { id: 'c8', day: 'Monday', timeRow: '13:00 PM', title: 'BODY BUILDING', subtitle: '13:00pm - 15:00pm' },
+  { id: 'c9', day: 'Wednesday', timeRow: '13:00 PM', title: 'MARTIAL ARTS', subtitle: '13:00pm - 15:00pm' },
+  { id: 'c10', day: 'Saturday', timeRow: '13:00 PM', title: 'CYCLING', subtitle: '13:00pm - 15:00pm' },
+  
+  { id: 'c11', day: 'Friday', timeRow: '15:00 PM', title: 'YOGA', subtitle: '15:00pm - 17:00pm' },
+  
+  { id: 'c12', day: 'Tuesday', timeRow: '17:00 PM', title: 'YOGA', subtitle: '17:00pm - 19:00pm' },
+  { id: 'c13', day: 'Saturday', timeRow: '17:00 PM', title: 'BODY BUILDING', subtitle: '17:00pm - 19:00pm' },
+];
+
+const loadInitialCells = (): TimetableCell[] => {
   try {
-    const saved = localStorage.getItem('move_together_routine');
-    return saved ? JSON.parse(saved) : DEFAULT_ROUTINE;
+    const saved = localStorage.getItem('move_together_timetable_cells');
+    return saved ? JSON.parse(saved) : DEFAULT_CELLS;
   } catch (e) {
-    return DEFAULT_ROUTINE;
+    return DEFAULT_CELLS;
+  }
+};
+
+const loadInitialRows = (): string[] => {
+  try {
+    const saved = localStorage.getItem('move_together_timetable_rows');
+    return saved ? JSON.parse(saved) : DEFAULT_TIME_ROWS;
+  } catch (e) {
+    return DEFAULT_TIME_ROWS;
   }
 };
 
 const initialState: RoutineState = {
-  slots: loadInitialRoutine(),
+  cells: loadInitialCells(),
+  timeRows: loadInitialRows(),
 };
 
 const routineSlice = createSlice({
   name: 'routine',
   initialState,
   reducers: {
-    addSlot: (state, action: PayloadAction<Omit<RoutineSlot, 'id'>>) => {
-      const newSlot: RoutineSlot = {
-        ...action.payload,
-        id: 'r_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-      };
-      state.slots.push(newSlot);
-      localStorage.setItem('move_together_routine', JSON.stringify(state.slots));
-    },
-    updateSlot: (state, action: PayloadAction<RoutineSlot>) => {
-      const idx = state.slots.findIndex(s => s.id === action.payload.id);
-      if (idx !== -1) {
-        state.slots[idx] = action.payload;
-        localStorage.setItem('move_together_routine', JSON.stringify(state.slots));
-      }
-    },
-    deleteSlot: (state, action: PayloadAction<string>) => {
-      state.slots = state.slots.filter(s => s.id !== action.payload);
-      localStorage.setItem('move_together_routine', JSON.stringify(state.slots));
-    },
-    applyPreset: (state, action: PayloadAction<'early' | 'standard' | 'night'>) => {
-      let presetSlots: RoutineSlot[] = [];
-      const days: RoutineSlot['day'][] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
-      if (action.payload === 'early') {
-        days.forEach((day, idx) => {
-          presetSlots.push(
-            { id: `preset_e1_${idx}`, day, time: '05:30 AM', title: 'Outdoor Workout / Run', taskId: 't2', note: 'Fresh morning cardio' },
-            { id: `preset_e2_${idx}`, day, time: '07:00 AM', title: 'Protein Meal & Water', taskId: 't3', note: 'Nutrition & 1L water' },
-            { id: `preset_e3_${idx}`, day, time: '05:30 PM', title: 'Gym / Weight Training', taskId: 't1', note: 'Evening lift' },
-            { id: `preset_e4_${idx}`, day, time: '09:00 PM', title: 'Read 15 Pages & Sleep', taskId: 't5', note: 'Early wind down' }
-          );
-        });
-      } else if (action.payload === 'night') {
-        days.forEach((day, idx) => {
-          presetSlots.push(
-            { id: `preset_n1_${idx}`, day, time: '09:00 AM', title: 'Morning Walk & Hydrate', taskId: 't2' },
-            { id: `preset_n2_${idx}`, day, time: '07:30 PM', title: 'Weight Training / Gym', taskId: 't1' },
-            { id: `preset_n3_${idx}`, day, time: '10:30 PM', title: 'Late Night Read & Photo', taskId: 't8' }
-          );
-        });
+    setCell: (state, action: PayloadAction<{ day: TimetableCell['day']; timeRow: string; title: string; subtitle?: string }>) => {
+      const { day, timeRow, title, subtitle } = action.payload;
+      
+      // If title is empty, delete cell
+      if (!title.trim()) {
+        state.cells = state.cells.filter(c => !(c.day === day && c.timeRow === timeRow));
       } else {
-        days.forEach((day, idx) => {
-          presetSlots.push(
-            { id: `preset_s1_${idx}`, day, time: '06:45 AM', title: 'Morning Workout', taskId: 't2' },
-            { id: `preset_s2_${idx}`, day, time: '01:00 PM', title: 'Water Intake Check', taskId: 't7' },
-            { id: `preset_s3_${idx}`, day, time: '06:00 PM', title: 'Evening Gym Session', taskId: 't1' },
-            { id: `preset_s4_${idx}`, day, time: '10:00 PM', title: 'Book Reading & Reflect', taskId: 't5' }
-          );
-        });
+        const existingIdx = state.cells.findIndex(c => c.day === day && c.timeRow === timeRow);
+        if (existingIdx !== -1) {
+          state.cells[existingIdx].title = title;
+          state.cells[existingIdx].subtitle = subtitle || `${timeRow.toLowerCase()} slot`;
+        } else {
+          state.cells.push({
+            id: 'c_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+            day,
+            timeRow,
+            title,
+            subtitle: subtitle || `${timeRow.toLowerCase()} slot`
+          });
+        }
       }
+      localStorage.setItem('move_together_timetable_cells', JSON.stringify(state.cells));
+    },
 
-      state.slots = presetSlots;
-      localStorage.setItem('move_together_routine', JSON.stringify(state.slots));
+    moveCell: (state, action: PayloadAction<{ cellId: string; targetDay: TimetableCell['day']; targetTimeRow: string }>) => {
+      const { cellId, targetDay, targetTimeRow } = action.payload;
+      const cell = state.cells.find(c => c.id === cellId);
+      if (cell) {
+        // Remove any existing cell at target
+        state.cells = state.cells.filter(c => !(c.day === targetDay && c.timeRow === targetTimeRow));
+        cell.day = targetDay;
+        cell.timeRow = targetTimeRow;
+        localStorage.setItem('move_together_timetable_cells', JSON.stringify(state.cells));
+      }
+    },
+
+    deleteCell: (state, action: PayloadAction<string>) => {
+      state.cells = state.cells.filter(c => c.id !== action.payload);
+      localStorage.setItem('move_together_timetable_cells', JSON.stringify(state.cells));
+    },
+
+    addTimeRow: (state, action: PayloadAction<string>) => {
+      if (!state.timeRows.includes(action.payload)) {
+        state.timeRows.push(action.payload);
+        localStorage.setItem('move_together_timetable_rows', JSON.stringify(state.timeRows));
+      }
+    },
+
+    removeTimeRow: (state, action: PayloadAction<string>) => {
+      state.timeRows = state.timeRows.filter(r => r !== action.payload);
+      state.cells = state.cells.filter(c => c.timeRow !== action.payload);
+      localStorage.setItem('move_together_timetable_rows', JSON.stringify(state.timeRows));
+      localStorage.setItem('move_together_timetable_cells', JSON.stringify(state.cells));
     }
   }
 });
 
-export const { addSlot, updateSlot, deleteSlot, applyPreset } = routineSlice.actions;
+export const { setCell, moveCell, deleteCell, addTimeRow, removeTimeRow } = routineSlice.actions;
 export default routineSlice.reducer;
