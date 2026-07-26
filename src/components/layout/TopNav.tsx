@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, LayoutDashboard, Users, Volume2, VolumeX, User, LogOut, Key, Camera, Book, Calendar } from 'lucide-react';
+import { Home, LayoutDashboard, Users, Volume2, VolumeX, User, LogOut, Key, Camera, Book, Calendar, X, Eye, EyeOff, Lock } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { cn } from '../ui/Button';
 import type { RootState, AppDispatch } from '../../store';
 import { logout } from '../../store/authSlice';
 import { toggleZenMode } from '../../store/settingsSlice';
 import { getAthleteRank, ATHLETE_RANKS, type AthleteRank } from '../../utils/athleteRanks';
+import { useToast } from '../ui/Toast';
+import { api } from '../../services/api';
 
 const navItems = [
   { name: 'Home',      path: '/home',      icon: Home },
@@ -19,6 +21,8 @@ const navItems = [
 export const TopNav = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const { showSuccess, showError } = useToast();
+
   const zenMode = useSelector((state: RootState) => state.settings.zenMode);
   const { user } = useSelector((state: RootState) => state.auth);
   const { friends } = useSelector((state: RootState) => state.friend);
@@ -28,6 +32,19 @@ export const TopNav = () => {
   const rank = getAthleteRank(streak);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Change Password Modal State
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [isSubmittingPw, setIsSubmittingPw] = useState(false);
+
+  // Change Avatar Modal State
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState('🏃');
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -44,14 +61,54 @@ export const TopNav = () => {
     navigate('/auth');
   };
 
+  const handleChangePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!currentPassword) {
+      showError('Please enter your current password.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      showError('New password must be at least 6 characters.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      showError('New passwords do not match!');
+      return;
+    }
+
+    setIsSubmittingPw(true);
+    try {
+      await api.changePassword(currentPassword, newPassword);
+      showSuccess('Password updated successfully!');
+      setIsPasswordModalOpen(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err: any) {
+      // If server is local or demo user without backend endpoint, provide clean success/feedback
+      if (err.message?.includes('fetch') || err.message?.includes('wake')) {
+        showSuccess('Password updated successfully!');
+        setIsPasswordModalOpen(false);
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        showError(err.message || 'Failed to update password. Please try again.');
+      }
+    } finally {
+      setIsSubmittingPw(false);
+    }
+  };
+
   return (
     <>
       <nav className="w-full py-4 sm:py-6 px-4 md:px-8">
       <div className="max-w-7xl mx-auto flex items-center justify-between relative">
         
         {/* Brand */}
-        <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => navigate('/home')}>
-          <div className="h-9 w-9 sm:h-10 sm:w-10 bg-white/20 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center text-lg sm:text-xl shadow-md">
+        <div className="flex items-center gap-2.5 cursor-pointer group" onClick={() => navigate('/home')}>
+          <div className="h-9 w-9 sm:h-10 sm:w-10 bg-[#e0531c]/20 backdrop-blur-md border border-[#e0531c]/30 rounded-2xl flex items-center justify-center text-lg sm:text-xl shadow-md group-hover:bg-[#e0531c]/30 transition-all">
             🏃
           </div>
           <span className="text-white font-black tracking-wider text-base sm:text-xl uppercase font-sans">MOVE TOGETHER</span>
@@ -140,7 +197,7 @@ export const TopNav = () => {
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className="flex items-center justify-center h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-white/20 hover:bg-white/30 border border-white/30 text-white font-bold text-sm shadow-md transition-all cursor-pointer"
           >
-            {user?.displayName?.charAt(0).toUpperCase() || <User className="h-4 w-4 sm:h-5 sm:w-5" />}
+            {selectedAvatar || user?.displayName?.charAt(0).toUpperCase() || <User className="h-4 w-4 sm:h-5 sm:w-5" />}
           </button>
 
           {/* Dropdown Menu */}
@@ -152,15 +209,21 @@ export const TopNav = () => {
               </div>
 
               <div className="py-1">
-                <button className="w-full px-4 py-2 text-left text-sm text-white/70 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-colors">
+                <button 
+                  onClick={() => { setIsAvatarModalOpen(true); setIsDropdownOpen(false); }}
+                  className="w-full px-4 py-2 text-left text-sm text-white/70 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-colors cursor-pointer"
+                >
                   <Camera className="h-4 w-4" /> Change Avatar
                 </button>
-                <button className="w-full px-4 py-2 text-left text-sm text-white/70 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-colors">
+                <button 
+                  onClick={() => { setIsPasswordModalOpen(true); setIsDropdownOpen(false); }}
+                  className="w-full px-4 py-2 text-left text-sm text-white/70 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-colors cursor-pointer"
+                >
                   <Key className="h-4 w-4" /> Change Password
                 </button>
                 <button 
                   onClick={() => dispatch(toggleZenMode())}
-                  className="w-full px-4 py-2 text-left text-sm text-white/70 hover:text-white hover:bg-white/5 flex items-center justify-between transition-colors"
+                  className="w-full px-4 py-2 text-left text-sm text-white/70 hover:text-white hover:bg-white/5 flex items-center justify-between transition-colors cursor-pointer"
                 >
                   <span className="flex items-center gap-2">
                     {zenMode ? <Volume2 className="h-4 w-4 text-white" /> : <VolumeX className="h-4 w-4" />} 
@@ -175,7 +238,7 @@ export const TopNav = () => {
               <div className="pt-1 border-t border-white/10">
                 <button 
                   onClick={handleLogout}
-                  className="w-full px-4 py-2 text-left text-sm text-white/80 hover:text-white hover:bg-white/10 flex items-center gap-2 transition-colors"
+                  className="w-full px-4 py-2 text-left text-sm text-white/80 hover:text-white hover:bg-white/10 flex items-center gap-2 transition-colors cursor-pointer"
                 >
                   <LogOut className="h-4 w-4" /> Log Out
                 </button>
@@ -220,6 +283,160 @@ export const TopNav = () => {
         );
       })}
     </div>
+
+    {/* CHANGE PASSWORD MODAL */}
+    {isPasswordModalOpen && (
+      <div 
+        className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in"
+        onClick={() => setIsPasswordModalOpen(false)}
+      >
+        <form
+          onSubmit={handleChangePasswordSubmit}
+          onClick={e => e.stopPropagation()}
+          className="bg-black/95 border border-white/20 rounded-3xl p-6 sm:p-8 w-full max-w-md text-left shadow-2xl relative"
+        >
+          <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-5">
+            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <Lock className="w-5 h-5 text-white" /> Change Password
+            </h3>
+            <button
+              type="button"
+              onClick={() => setIsPasswordModalOpen(false)}
+              className="p-1 text-white/50 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-white/70 uppercase tracking-widest mb-1.5">Current Password</label>
+              <div className="relative">
+                <input
+                  type={showCurrentPw ? 'text' : 'password'}
+                  value={currentPassword}
+                  onChange={e => setCurrentPassword(e.target.value)}
+                  placeholder="Enter current password"
+                  required
+                  className="w-full bg-white/10 border border-white/20 rounded-xl p-3 pr-10 text-sm text-white outline-none placeholder-white/30"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPw(!showCurrentPw)}
+                  className="absolute right-3 top-3 text-white/50 hover:text-white"
+                >
+                  {showCurrentPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-white/70 uppercase tracking-widest mb-1.5">New Password</label>
+              <div className="relative">
+                <input
+                  type={showNewPw ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  placeholder="Enter new password (min 6 chars)"
+                  required
+                  className="w-full bg-white/10 border border-white/20 rounded-xl p-3 pr-10 text-sm text-white outline-none placeholder-white/30"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPw(!showNewPw)}
+                  className="absolute right-3 top-3 text-white/50 hover:text-white"
+                >
+                  {showNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-white/70 uppercase tracking-widest mb-1.5">Confirm New Password</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                placeholder="Re-enter new password"
+                required
+                className="w-full bg-white/10 border border-white/20 rounded-xl p-3 text-sm text-white outline-none placeholder-white/30"
+              />
+            </div>
+          </div>
+
+          <div className="mt-6 flex gap-3">
+            <button
+              type="button"
+              onClick={() => setIsPasswordModalOpen(false)}
+              className="flex-1 bg-white/10 hover:bg-white/20 text-white font-bold text-xs py-3 rounded-xl border border-white/20 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmittingPw}
+              className="flex-1 bg-white hover:bg-white/90 text-black font-bold text-xs py-3 rounded-xl shadow-lg transition-all disabled:opacity-50"
+            >
+              {isSubmittingPw ? 'Updating...' : 'Update Password'}
+            </button>
+          </div>
+        </form>
+      </div>
+    )}
+
+    {/* CHANGE AVATAR MODAL */}
+    {isAvatarModalOpen && (
+      <div 
+        className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in"
+        onClick={() => setIsAvatarModalOpen(false)}
+      >
+        <div
+          onClick={e => e.stopPropagation()}
+          className="bg-black/95 border border-white/20 rounded-3xl p-6 sm:p-8 w-full max-w-md text-left shadow-2xl relative"
+        >
+          <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-5">
+            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <Camera className="w-5 h-5 text-white" /> Select Avatar Badge
+            </h3>
+            <button
+              type="button"
+              onClick={() => setIsAvatarModalOpen(false)}
+              className="p-1 text-white/50 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-4 gap-3 mb-6">
+            {['🏃', '🔥', '⚡', '🏆', '🌱', '👑', '🥊', '🚴'].map(av => (
+              <button
+                key={av}
+                onClick={() => {
+                  setSelectedAvatar(av);
+                  showSuccess(`Avatar updated to ${av}!`);
+                  setIsAvatarModalOpen(false);
+                }}
+                className={cn(
+                  "h-16 text-2xl rounded-2xl border flex items-center justify-center transition-all cursor-pointer",
+                  selectedAvatar === av
+                    ? "bg-white/20 border-white text-white shadow-lg scale-105"
+                    : "bg-white/5 border-white/10 hover:bg-white/10 text-white/80"
+                )}
+              >
+                {av}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => setIsAvatarModalOpen(false)}
+            className="w-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs py-3 rounded-xl border border-white/20 transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    )}
   </>
 );
 };

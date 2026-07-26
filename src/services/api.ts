@@ -45,6 +45,20 @@ export const api = {
   login: async (data: any) => {
     return safeFetch(`${API_URL}/auth/login`, { method: 'POST', headers: getHeaders(), body: JSON.stringify(data) });
   },
+  changePassword: async (currentPassword: string, newPassword: string) => {
+    return safeFetch(`${API_URL}/auth/change-password`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ currentPassword, newPassword })
+    });
+  },
+  updateAvatar: async (avatarUrl: string) => {
+    return safeFetch(`${API_URL}/auth/update-avatar`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ avatarUrl })
+    });
+  },
 
   // --- Challenges ---
   getActiveChallenge: async () => {
