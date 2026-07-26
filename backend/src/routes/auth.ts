@@ -25,6 +25,7 @@ router.post('/register', async (req, res) => {
   email = email.toLowerCase().trim();
   displayName = displayName.trim();
 
+  let hashedPassword = '';
   try {
     // Check if user exists
     const userExists = await User.findOne({ email });
@@ -35,7 +36,7 @@ router.post('/register', async (req, res) => {
 
     // Hash password
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    hashedPassword = await bcrypt.hash(password, salt);
 
     // Create user with unique authProviderId for local accounts
     const user = await User.create({
