@@ -88,7 +88,7 @@ export const Routine = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 text-left">
         <div>
-          <div className="inline-flex items-center gap-2 bg-white/20 border border-white/20 px-3.5 py-1 rounded-full text-xs font-bold text-white mb-2">
+          <div className="inline-flex items-center gap-2 bg-black/30 border border-white/20 px-3.5 py-1 rounded-full text-xs font-bold text-white mb-2">
             <Calendar className="w-3.5 h-3.5 text-white" /> Weekly Routine Planner
           </div>
           <h1 
@@ -104,13 +104,13 @@ export const Routine = () => {
 
         <div className="flex items-center gap-2">
           {isAddingRow ? (
-            <div className="flex items-center gap-2 bg-white/20 backdrop-blur-xl border border-white/30 rounded-2xl p-2">
+            <div className="flex items-center gap-2 bg-black/40 backdrop-blur-xl border border-white/30 rounded-2xl p-2">
               <input 
                 type="text" 
                 value={newRowTime}
                 onChange={e => setNewRowTime(e.target.value)}
                 placeholder="e.g. 23:00 PM"
-                className="bg-white/10 text-white border border-white/20 rounded-xl px-3 py-1 text-xs outline-none w-28 font-mono"
+                className="bg-black/50 text-white border border-white/20 rounded-xl px-3 py-1 text-xs outline-none w-28 font-mono"
               />
               <button 
                 onClick={handleAddRow}
@@ -128,7 +128,7 @@ export const Routine = () => {
           ) : (
             <button
               onClick={() => setIsAddingRow(true)}
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 border border-white/30 text-white font-bold text-xs px-4 py-2.5 rounded-2xl shadow-md transition-all cursor-pointer"
+              className="flex items-center gap-2 bg-black/30 hover:bg-black/50 border border-white/30 text-white font-bold text-xs px-4 py-2.5 rounded-2xl shadow-md transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4" /> Add Side Time Row
             </button>
@@ -136,12 +136,12 @@ export const Routine = () => {
         </div>
       </div>
 
-      {/* GLASS BOX TIMETABLE GRID BOARD */}
-      <div className="w-full overflow-x-auto custom-scrollbar bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl p-3 shadow-2xl">
+      {/* OBSIDIAN GLASS TIMETABLE GRID BOARD (NO WHITE CLOUDY TINT) */}
+      <div className="w-full overflow-x-auto custom-scrollbar bg-black/30 backdrop-blur-2xl border border-white/20 rounded-3xl p-3 shadow-2xl">
         <div className="min-w-[900px] grid grid-cols-[100px_repeat(7,1fr)] sm:grid-cols-[130px_repeat(7,1fr)] gap-2">
           
           {/* TOP LEFT CORNER CELL */}
-          <div className="bg-white/20 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center p-3 text-white font-black text-xs uppercase tracking-widest shadow-sm">
+          <div className="bg-black/40 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center p-3 text-white font-black text-xs uppercase tracking-widest shadow-sm">
             TIME / DAY
           </div>
 
@@ -149,7 +149,7 @@ export const Routine = () => {
           {DAYS.map(day => (
             <div 
               key={day}
-              className="bg-white/20 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center p-3 text-white font-black text-sm uppercase tracking-wider shadow-sm"
+              className="bg-black/40 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center p-3 text-white font-black text-sm uppercase tracking-wider shadow-sm"
             >
               {day}
             </div>
@@ -160,7 +160,7 @@ export const Routine = () => {
             <div key={timeRow} className="contents">
               
               {/* SIDE TIME COLUMN CELL (Left Axis down screen) */}
-              <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl flex items-center justify-between px-3 py-4 text-white font-bold text-xs sm:text-sm font-mono tracking-wider text-left group">
+              <div className="bg-black/30 backdrop-blur-md border border-white/15 rounded-2xl flex items-center justify-between px-3 py-4 text-white font-bold text-xs sm:text-sm font-mono tracking-wider text-left group">
                 <span>{timeRow}</span>
                 <button
                   onClick={() => dispatch(removeTimeRow(timeRow))}
@@ -182,11 +182,11 @@ export const Routine = () => {
                     key={cellKey}
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, day, timeRow)}
-                    className="relative min-h-[95px] rounded-2xl border border-white/10 transition-colors bg-white/[0.03] hover:bg-white/[0.08] flex items-center justify-center p-1.5"
+                    className="relative min-h-[95px] rounded-2xl border border-white/10 transition-colors bg-black/20 hover:bg-black/40 flex items-center justify-center p-1.5"
                   >
                     {isEditing ? (
                       /* DIRECT INLINE CELL INPUT FORM */
-                      <div className="w-full h-full bg-black/90 backdrop-blur-2xl border-2 border-white rounded-2xl p-2 flex flex-col justify-center gap-1.5 z-20 shadow-2xl">
+                      <div className="w-full h-full bg-black/95 backdrop-blur-2xl border-2 border-white rounded-2xl p-2 flex flex-col justify-center gap-1.5 z-20 shadow-2xl">
                         <input
                           type="text"
                           value={editTitle}
@@ -226,12 +226,12 @@ export const Routine = () => {
                         </div>
                       </div>
                     ) : cellData ? (
-                      /* TRANSLUCENT GLASS TASK CARD */
+                      /* OBSIDIAN GLASS TASK CARD */
                       <div
                         draggable
                         onDragStart={(e) => handleDragStart(e, cellData.id)}
                         onClick={() => handleStartEdit(day, timeRow)}
-                        className="w-full h-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 rounded-2xl p-2 sm:p-3 flex flex-col items-center justify-center text-center cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-all shadow-md group relative"
+                        className="w-full h-full bg-black/50 hover:bg-black/70 backdrop-blur-md border border-white/30 rounded-2xl p-2 sm:p-3 flex flex-col items-center justify-center text-center cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-all shadow-md group relative text-white"
                       >
                         <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                           <GripVertical className="w-3.5 h-3.5 text-white/50" />
@@ -249,7 +249,7 @@ export const Routine = () => {
                       /* EMPTY CELL WITH + ICON */
                       <button
                         onClick={() => handleStartEdit(day, timeRow)}
-                        className="w-full h-full flex flex-col items-center justify-center gap-1 text-white/30 hover:text-white hover:bg-white/10 transition-all rounded-2xl group"
+                        className="w-full h-full flex flex-col items-center justify-center gap-1 text-white/30 hover:text-white hover:bg-black/30 transition-all rounded-2xl group"
                       >
                         <Plus className="w-4 h-4 text-white/40 group-hover:text-white group-hover:scale-125 transition-all" />
                         <span className="text-[10px] opacity-0 group-hover:opacity-100 transition-opacity uppercase font-mono">Click to Add</span>
