@@ -9,6 +9,7 @@ import { toggleTask } from '../../store/challengeSlice';
 import confetti from 'canvas-confetti';
 import { WaterTracker } from './WaterTracker';
 import { PhotoUpload } from './PhotoUpload';
+import { CustomizeTasksModal } from './CustomizeTasksModal';
 
 type TaskId = 'weight' | 'cardio' | 'diet' | 'fruit' | 'reading' | 'selfcare' | 'water' | 'photo';
 
@@ -92,6 +93,7 @@ export const Today = ({ hideHeader = false }: { hideHeader?: boolean }) => {
   
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [logs, setLogs] = useState<Record<string, TaskLog>>({});
+  const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
 
   const tasks = activeChallenge?.tasks && activeChallenge.tasks.length > 0
     ? activeChallenge.tasks.map((t: any) => ({
@@ -159,7 +161,16 @@ export const Today = ({ hideHeader = false }: { hideHeader?: boolean }) => {
       {!hideHeader && (
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-lg font-black text-white tracking-tight">Today's Tasks</h2>
+            <h2 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
+              Today's Tasks
+              <button
+                onClick={() => setIsCustomizeModalOpen(true)}
+                className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-white/80 border border-white/20 transition-all cursor-pointer"
+                title="Customize my personal habit list"
+              >
+                ⚙️ Customize Tasks
+              </button>
+            </h2>
             <p className="text-xs text-white/50">Complete all {totalCount} before midnight</p>
           </div>
           <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-white/10 text-white/60">
@@ -167,6 +178,11 @@ export const Today = ({ hideHeader = false }: { hideHeader?: boolean }) => {
           </span>
         </div>
       )}
+
+      <CustomizeTasksModal 
+        isOpen={isCustomizeModalOpen}
+        onClose={() => setIsCustomizeModalOpen(false)}
+      />
       
       {/* Progress Bar always shown */}
       <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden mb-2">
