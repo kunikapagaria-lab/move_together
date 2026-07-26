@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Plus, Trash2, Calendar, GripVertical } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '../../store';
-import { setCell, moveCell, addTimeRow, removeTimeRow, type TimetableCell } from '../../store/routineSlice';
+import { setCell, moveCell, deleteCell, type TimetableCell } from '../../store/routineSlice';
 import { BackButton } from '../../components/ui/BackButton';
 import { useToast } from '../../components/ui/Toast';
 
@@ -13,52 +13,55 @@ const DAYS: TimetableCell['day'][] = [
 export const Routine = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { showSuccess } = useToast();
-  const { cells, timeRows } = useSelector((state: RootState) => state.routine);
+  const { cells } = useSelector((state: RootState) => state.routine);
 
-  // Active editing state: { day, timeRow } or null
-  const [editingCellKey, setEditingCellKey] = useState<string | null>(null);
+  // Editing state: cellId or null
+  const [editingCellId, setEditingCellId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editSubtitle, setEditSubtitle] = useState('');
 
-  // Side Time Row Add State
-  const [newRowTime, setNewRowTime] = useState('');
-  const [isAddingRow, setIsAddingRow] = useState(false);
+  // New slot creation for a day
+  const [addingDay, setAddingDay] = useState<TimetableCell['day'] | null>(null);
+  const [newTitle, setNewTitle] = useState('');
+  const [newSubtitle, setNewSubtitle] = useState('');
 
   // Drag and Drop State
   const [draggedCellId, setDraggedCellId] = useState<string | null>(null);
 
-  const getCellKey = (day: string, timeRow: string) => `${day}__${timeRow}`;
-
-  const getCellData = (day: TimetableCell['day'], timeRow: string) => {
-    return cells.find(c => c.day === day && c.timeRow === timeRow);
+  const handleStartEdit = (cell: TimetableCell) => {
+    setEditingCellId(cell.id);
+    setEditTitle(cell.title);
+    setEditSubtitle(cell.subtitle || '');
   };
 
-  const handleStartEdit = (day: TimetableCell['day'], timeRow: string) => {
-    const existing = getCellData(day, timeRow);
-    setEditTitle(existing ? existing.title : '');
-    setEditSubtitle(existing ? existing.subtitle || '' : '');
-    setEditingCellKey(getCellKey(day, timeRow));
-  };
-
-  const handleSaveCell = (day: TimetableCell['day'], timeRow: string) => {
-    dispatch(setCell({
-      day,
-      timeRow,
-      title: editTitle,
-      subtitle: editSubtitle
-    }));
-    setEditingCellKey(null);
-    if (editTitle.trim()) {
+  const handleSaveEdit = (cell: TimetableCell) => {
+    if (!editTitle.trim()) {
+      dispatch(deleteCell(cell.id));
+      showSuccess('Removed slot');
+    } else {
+      dispatch(setCell({
+        day: cell.day,
+        timeRow: cell.timeRow || 'Custom',
+        title: editTitle,
+        subtitle: editSubtitle
+      }));
       showSuccess('Saved slot!');
     }
+    setEditingCellId(null);
   };
 
-  const handleAddRow = () => {
-    if (!newRowTime.trim()) return;
-    dispatch(addTimeRow(newRowTime.trim()));
-    showSuccess(`Added ${newRowTime} time row!`);
-    setNewRowTime('');
-    setIsAddingRow(false);
+  const handleAddNewTask = (day: TimetableCell['day']) => {
+    if (!newTitle.trim()) return;
+    dispatch(setCell({
+      day,
+      timeRow: newSubtitle || 'Custom',
+      title: newTitle,
+      subtitle: newSubtitle || undefined
+    }));
+    showSuccess(`Added task to ${day}!`);
+    setNewTitle('');
+    setNewSubtitle('');
+    setAddingDay(null);
   };
 
   // Drag and drop handlers
@@ -71,12 +74,12 @@ export const Routine = () => {
     e.preventDefault();
   };
 
-  const handleDrop = (e: React.DragEvent, targetDay: TimetableCell['day'], targetTimeRow: string) => {
+  const handleDrop = (e: React.DragEvent, targetDay: TimetableCell['day']) => {
     e.preventDefault();
     const cellId = e.dataTransfer.getData('text/plain') || draggedCellId;
     if (cellId) {
-      dispatch(moveCell({ cellId, targetDay, targetTimeRow }));
-      showSuccess(`Moved task to ${targetDay} ${targetTimeRow}!`);
+      dispatch(moveCell({ cellId, targetDay, targetTimeRow: 'Custom' }));
+      showSuccess(`Moved task to ${targetDay}!`);
       setDraggedCellId(null);
     }
   };
@@ -98,169 +101,167 @@ export const Routine = () => {
             Weekly Routine Timetable
           </h1>
           <p className="text-xs sm:text-sm text-white/80 mt-1 max-w-xl">
-            Click directly inside any cell to type your task. Drag and drop task blocks between days and times to re-arrange your schedule.
+            Click directly on any card to edit. Drag and drop task blocks between days to re-arrange your weekly routine.
           </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {isAddingRow ? (
-            <div className="flex items-center gap-2 bg-white/20 backdrop-blur-xl border border-white/30 rounded-2xl p-2">
-              <input 
-                type="text" 
-                value={newRowTime}
-                onChange={e => setNewRowTime(e.target.value)}
-                placeholder="e.g. 23:00 PM"
-                className="bg-white/10 text-white border border-white/20 rounded-xl px-3 py-1 text-xs outline-none w-28 font-mono"
-              />
-              <button 
-                onClick={handleAddRow}
-                className="bg-white text-black font-bold text-xs px-3 py-1 rounded-xl"
-              >
-                Add
-              </button>
-              <button 
-                onClick={() => setIsAddingRow(false)}
-                className="text-white/50 hover:text-white px-2 text-xs"
-              >
-                ✕
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setIsAddingRow(true)}
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 border border-white/30 text-white font-bold text-xs px-4 py-2.5 rounded-2xl shadow-md transition-all cursor-pointer"
-            >
-              <Plus className="w-4 h-4" /> Add Side Time Row
-            </button>
-          )}
         </div>
       </div>
 
-      {/* GLASS BOX TIMETABLE GRID BOARD */}
-      <div className="w-full overflow-x-auto custom-scrollbar bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl p-3 shadow-2xl">
-        <div className="min-w-[900px] grid grid-cols-[100px_repeat(7,1fr)] sm:grid-cols-[130px_repeat(7,1fr)] gap-2">
-          
-          {/* TOP LEFT CORNER CELL (Empty spacer) */}
-          <div />
+      {/* CLEAN 7-DAY WEEKLY ROUTINE BOARD (NO SIDE TIME COLUMN) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-3 sm:gap-4 w-full">
+        {DAYS.map(day => {
+          const dayCells = cells.filter(c => c.day === day);
 
-          {/* 7 DAY HEADER COLUMNS (Top Axis across screen) */}
-          {DAYS.map(day => (
-            <div 
+          return (
+            <div
               key={day}
-              className="bg-white/20 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center p-3 text-white font-black text-sm uppercase tracking-wider shadow-sm"
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, day)}
+              className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl p-3 sm:p-4 flex flex-col justify-between min-h-[400px] shadow-xl transition-all hover:bg-white/[0.13]"
             >
-              {day}
-            </div>
-          ))}
+              <div>
+                {/* DAY HEADER */}
+                <div className="bg-white/20 backdrop-blur-md border border-white/20 rounded-2xl p-3 text-center text-white font-black text-sm uppercase tracking-wider mb-4 shadow-sm">
+                  {day}
+                </div>
 
-          {/* GRID ROWS (Time Column on the SIDE + 7 Day Cells) */}
-          {timeRows.map(timeRow => (
-            <div key={timeRow} className="contents">
-              
-              {/* SIDE TIME COLUMN CELL (Left Axis down screen) */}
-              <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl flex items-center justify-between px-3 py-4 text-white font-bold text-xs sm:text-sm font-mono tracking-wider text-left group">
-                <span>{timeRow}</span>
-                <button
-                  onClick={() => dispatch(removeTimeRow(timeRow))}
-                  className="opacity-0 group-hover:opacity-100 text-white/40 hover:text-white transition-opacity"
-                  title="Remove row"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
+                {/* TASKS LIST FOR THIS DAY */}
+                <div className="space-y-2.5">
+                  {dayCells.map(cell => {
+                    const isEditing = editingCellId === cell.id;
 
-              {/* 7 INTERACTIVE DAY CELLS FOR THIS TIME ROW */}
-              {DAYS.map(day => {
-                const cellKey = getCellKey(day, timeRow);
-                const cellData = getCellData(day, timeRow);
-                const isEditing = editingCellKey === cellKey;
-
-                return (
-                  <div
-                    key={cellKey}
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleDrop(e, day, timeRow)}
-                    className="relative min-h-[95px] rounded-2xl border border-white/15 transition-all bg-white/[0.04] hover:bg-white/[0.12] flex items-center justify-center p-3 text-center cursor-pointer group"
-                  >
-                    {isEditing ? (
-                      /* DIRECT INLINE CELL INPUT FORM */
-                      <div className="w-full h-full bg-black/90 backdrop-blur-2xl border-2 border-white rounded-2xl p-2 flex flex-col justify-center gap-1.5 z-20 shadow-2xl">
+                    return isEditing ? (
+                      /* INLINE EDIT FORM */
+                      <div key={cell.id} className="bg-black/90 backdrop-blur-2xl border-2 border-white rounded-2xl p-2.5 flex flex-col gap-2 shadow-2xl z-20">
                         <input
                           type="text"
                           value={editTitle}
                           onChange={e => setEditTitle(e.target.value)}
-                          placeholder="TASK (e.g. YOGA)"
+                          placeholder="Task (e.g. YOGA)"
                           autoFocus
                           onKeyDown={e => {
-                            if (e.key === 'Enter') handleSaveCell(day, timeRow);
-                            if (e.key === 'Escape') setEditingCellKey(null);
+                            if (e.key === 'Enter') handleSaveEdit(cell);
+                            if (e.key === 'Escape') setEditingCellId(null);
                           }}
-                          className="w-full bg-white/10 text-white text-xs font-bold px-2 py-1 rounded-xl border border-white/20 outline-none uppercase placeholder-white/40 text-center"
+                          className="w-full bg-white/10 text-white text-xs font-bold px-2.5 py-1.5 rounded-xl border border-white/20 outline-none uppercase text-center"
                         />
                         <input
                           type="text"
                           value={editSubtitle}
                           onChange={e => setEditSubtitle(e.target.value)}
-                          placeholder="Time Range (e.g. 5:00am-7:00am)"
+                          placeholder="Time (e.g. 5:00am-7:00am)"
                           onKeyDown={e => {
-                            if (e.key === 'Enter') handleSaveCell(day, timeRow);
-                            if (e.key === 'Escape') setEditingCellKey(null);
+                            if (e.key === 'Enter') handleSaveEdit(cell);
+                            if (e.key === 'Escape') setEditingCellId(null);
                           }}
-                          className="w-full bg-white/10 text-white text-[10px] px-2 py-1 rounded-xl border border-white/20 outline-none placeholder-white/40 text-center"
+                          className="w-full bg-white/10 text-white text-[10px] px-2 py-1 rounded-xl border border-white/20 outline-none text-center"
                         />
-                        <div className="flex items-center justify-end gap-1 mt-1">
+                        <div className="flex items-center justify-end gap-1.5 mt-1">
                           <button
-                            onClick={() => setEditingCellKey(null)}
-                            className="text-[10px] bg-white/10 hover:bg-white/20 text-white px-2 py-0.5 rounded-lg"
+                            onClick={() => setEditingCellId(null)}
+                            className="text-[10px] bg-white/10 text-white px-2 py-1 rounded-lg"
                           >
                             Cancel
                           </button>
                           <button
-                            onClick={() => handleSaveCell(day, timeRow)}
-                            className="text-[10px] bg-white text-black font-bold px-2.5 py-0.5 rounded-lg shadow-sm"
+                            onClick={() => handleSaveEdit(cell)}
+                            className="text-[10px] bg-white text-black font-bold px-2.5 py-1 rounded-lg shadow-sm"
                           >
                             Save
                           </button>
                         </div>
                       </div>
-                    ) : cellData ? (
-                      /* DIRECT TEXT WRITTEN INSIDE THE CELL (NO INNER NESTED BOX) */
+                    ) : (
+                      /* CARD DIRECTLY INSIDE COLUMN (NO INNER NESTED BOX) */
                       <div
+                        key={cell.id}
                         draggable
-                        onDragStart={(e) => handleDragStart(e, cellData.id)}
-                        onClick={() => handleStartEdit(day, timeRow)}
-                        className="w-full h-full flex flex-col items-center justify-center text-center cursor-grab active:cursor-grabbing relative"
+                        onDragStart={(e) => handleDragStart(e, cell.id)}
+                        onClick={() => handleStartEdit(cell)}
+                        className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-2xl p-3 text-center cursor-grab active:cursor-grabbing transition-all shadow-md group relative"
                       >
-                        <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <GripVertical className="w-3.5 h-3.5 text-white/50" />
+                        <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              dispatch(deleteCell(cell.id));
+                              showSuccess('Removed slot');
+                            }}
+                            className="text-white/40 hover:text-white p-0.5"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                          <GripVertical className="w-3 h-3 text-white/50" />
                         </div>
                         <h4 className="font-black text-white text-xs sm:text-sm uppercase tracking-wide leading-tight drop-shadow-md">
-                          {cellData.title}
+                          {cell.title}
                         </h4>
-                        {cellData.subtitle && (
+                        {cell.subtitle && (
                           <p className="text-[10px] sm:text-xs text-white/80 font-medium mt-1">
-                            {cellData.subtitle}
+                            {cell.subtitle}
                           </p>
                         )}
                       </div>
-                    ) : (
-                      /* EMPTY CELL WITH + ICON */
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* + ADD TASK BUTTON AT BOTTOM OF EACH COLUMN */}
+              <div className="mt-3">
+                {addingDay === day ? (
+                  <div className="bg-black/90 backdrop-blur-2xl border-2 border-white rounded-2xl p-2.5 flex flex-col gap-2 shadow-2xl">
+                    <input
+                      type="text"
+                      value={newTitle}
+                      onChange={e => setNewTitle(e.target.value)}
+                      placeholder="Task Name (e.g. GYM)"
+                      autoFocus
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') handleAddNewTask(day);
+                        if (e.key === 'Escape') setAddingDay(null);
+                      }}
+                      className="w-full bg-white/10 text-white text-xs font-bold px-2.5 py-1.5 rounded-xl border border-white/20 outline-none uppercase text-center"
+                    />
+                    <input
+                      type="text"
+                      value={newSubtitle}
+                      onChange={e => setNewSubtitle(e.target.value)}
+                      placeholder="Time Range (e.g. 8:00am-10:00am)"
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') handleAddNewTask(day);
+                        if (e.key === 'Escape') setAddingDay(null);
+                      }}
+                      className="w-full bg-white/10 text-white text-[10px] px-2 py-1 rounded-xl border border-white/20 outline-none text-center"
+                    />
+                    <div className="flex items-center justify-end gap-1.5 mt-1">
                       <button
-                        onClick={() => handleStartEdit(day, timeRow)}
-                        className="w-full h-full flex flex-col items-center justify-center gap-1 text-white/30 hover:text-white transition-all rounded-2xl"
+                        onClick={() => setAddingDay(null)}
+                        className="text-[10px] bg-white/10 text-white px-2 py-1 rounded-lg"
                       >
-                        <Plus className="w-4 h-4 text-white/40 group-hover:text-white group-hover:scale-125 transition-all" />
-                        <span className="text-[10px] opacity-0 group-hover:opacity-100 transition-opacity uppercase font-mono">Click to Add</span>
+                        Cancel
                       </button>
-                    )}
+                      <button
+                        onClick={() => handleAddNewTask(day)}
+                        className="text-[10px] bg-white text-black font-bold px-2.5 py-1 rounded-lg shadow-sm"
+                      >
+                        Add Task
+                      </button>
+                    </div>
                   </div>
-                );
-              })}
-
+                ) : (
+                  <button
+                    onClick={() => setAddingDay(day)}
+                    className="w-full py-2.5 border border-dashed border-white/30 rounded-2xl flex items-center justify-center gap-1 text-white/50 hover:text-white hover:border-white/60 hover:bg-white/10 transition-all text-xs font-bold group"
+                  >
+                    <Plus className="w-4 h-4 text-white/50 group-hover:text-white group-hover:scale-110 transition-transform" />
+                    <span className="text-[11px]">Add Task</span>
+                  </button>
+                )}
+              </div>
             </div>
-          ))}
-
-        </div>
+          );
+        })}
       </div>
     </div>
   );
