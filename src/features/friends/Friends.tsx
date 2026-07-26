@@ -25,6 +25,10 @@ export const Friends = () => {
 
   useEffect(() => {
     dispatch(fetchFriends());
+    const intervalId = setInterval(() => {
+      dispatch(fetchFriends());
+    }, 3000);
+    return () => clearInterval(intervalId);
   }, [dispatch]);
 
   useEffect(() => {
@@ -124,14 +128,18 @@ export const Friends = () => {
                   {!existingFriendship ? (
                     <button 
                       onClick={() => handleSendRequest(resultUser._id)}
-                      className="p-2 bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 rounded-lg transition-colors flex items-center gap-2 text-sm font-bold"
+                      className="px-3 py-1.5 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/30 rounded-xl transition-all flex items-center gap-1.5 text-xs font-bold shadow-md cursor-pointer"
                     >
-                      <UserPlus className="h-4 w-4" /> Add
+                      <UserPlus className="h-4 w-4" /> Add Friend
                     </button>
                   ) : existingFriendship.status === 'accepted' ? (
-                    <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest px-3 py-1 bg-emerald-500/10 rounded-lg">Friends</span>
-                  ) : existingFriendship.requester._id === user?._id ? (
-                    <span className="text-xs font-bold text-white/40 uppercase tracking-widest px-3 py-1 bg-white/5 rounded-lg">Requested</span>
+                    <span className="text-xs font-extrabold text-emerald-400 uppercase tracking-wider px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-1.5">
+                      ✓ Friends
+                    </span>
+                  ) : (existingFriendship.requester?._id || existingFriendship.requester) === user?._id ? (
+                    <span className="text-xs font-extrabold text-amber-400 uppercase tracking-wider px-3 py-1.5 bg-amber-500/15 border border-amber-500/30 rounded-xl flex items-center gap-1.5 shadow-sm">
+                      ⏳ Pending...
+                    </span>
                   ) : (
                     <div className="flex gap-2">
                        <button onClick={() => handleAccept(existingFriendship._id)} className="p-2 bg-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/30"><Check className="h-4 w-4" /></button>

@@ -55,7 +55,9 @@ router.post('/request', protect, async (req: AuthRequest, res: Response) => {
       status: 'pending'
     });
 
-    res.status(201).json(request);
+    const populatedRequest = await Friendship.findById(request._id).populate('requester recipient', 'displayName email _id');
+
+    res.status(201).json(populatedRequest);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error sending request' });
