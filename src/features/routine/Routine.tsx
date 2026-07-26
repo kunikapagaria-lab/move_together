@@ -82,7 +82,7 @@ export const Routine = () => {
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto w-full px-2 sm:px-6 py-6 text-center">
+    <div className="max-w-[1400px] mx-auto w-full px-2 sm:px-6 py-6 text-left">
       <BackButton />
 
       {/* Header */}
