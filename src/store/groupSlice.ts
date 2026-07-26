@@ -10,6 +10,8 @@ export interface GroupMember {
   joinedAt: string;
   streak: number;
   todayCompleted: number;
+  totalTasks?: number;
+  taskDetails?: any[];
 }
 
 export interface Group {
