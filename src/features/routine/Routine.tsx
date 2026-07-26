@@ -89,7 +89,7 @@ export const Routine = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 text-left">
         <div>
           <div className="inline-flex items-center gap-2 bg-white/20 border border-white/20 px-3.5 py-1 rounded-full text-xs font-bold text-white mb-2">
-            <Calendar className="w-3.5 h-3.5 text-white" /> Weekly Grid Routine
+            <Calendar className="w-3.5 h-3.5 text-white" /> Weekly Routine Planner
           </div>
           <h1 
             style={{ fontFamily: "'Oswald', sans-serif" }}
@@ -104,7 +104,7 @@ export const Routine = () => {
 
         <div className="flex items-center gap-2">
           {isAddingRow ? (
-            <div className="flex items-center gap-2 bg-black/80 border border-white/30 rounded-2xl p-2">
+            <div className="flex items-center gap-2 bg-white/20 backdrop-blur-xl border border-white/30 rounded-2xl p-2">
               <input 
                 type="text" 
                 value={newRowTime}
@@ -136,12 +136,12 @@ export const Routine = () => {
         </div>
       </div>
 
-      {/* TIMETABLE GRID BOARD */}
-      <div className="w-full overflow-x-auto custom-scrollbar border-2 border-white/20 bg-black/90 shadow-2xl rounded-2xl p-1 sm:p-2">
-        <div className="min-w-[900px] grid grid-cols-[100px_repeat(7,1fr)] sm:grid-cols-[130px_repeat(7,1fr)] gap-[2px] bg-neutral-900 border border-white/10">
+      {/* GLASS BOX TIMETABLE GRID BOARD */}
+      <div className="w-full overflow-x-auto custom-scrollbar bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl p-3 shadow-2xl">
+        <div className="min-w-[900px] grid grid-cols-[100px_repeat(7,1fr)] sm:grid-cols-[130px_repeat(7,1fr)] gap-2">
           
           {/* TOP LEFT CORNER CELL */}
-          <div className="bg-[#e0531c] border border-white/20 flex items-center justify-center p-3 text-white font-black text-xs uppercase tracking-widest">
+          <div className="bg-white/20 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center p-3 text-white font-black text-xs uppercase tracking-widest shadow-sm">
             TIME / DAY
           </div>
 
@@ -149,7 +149,7 @@ export const Routine = () => {
           {DAYS.map(day => (
             <div 
               key={day}
-              className="bg-[#e0531c] border border-white/20 flex items-center justify-center p-3 text-white font-black text-sm uppercase tracking-wider shadow-sm"
+              className="bg-white/20 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center p-3 text-white font-black text-sm uppercase tracking-wider shadow-sm"
             >
               {day}
             </div>
@@ -160,11 +160,11 @@ export const Routine = () => {
             <div key={timeRow} className="contents">
               
               {/* SIDE TIME COLUMN CELL (Left Axis down screen) */}
-              <div className="bg-[#121212] border border-white/10 flex items-center justify-between px-3 py-4 text-white font-bold text-xs sm:text-sm font-mono tracking-wider text-left group">
+              <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl flex items-center justify-between px-3 py-4 text-white font-bold text-xs sm:text-sm font-mono tracking-wider text-left group">
                 <span>{timeRow}</span>
                 <button
                   onClick={() => dispatch(removeTimeRow(timeRow))}
-                  className="opacity-0 group-hover:opacity-100 text-white/40 hover:text-rose-400 transition-opacity"
+                  className="opacity-0 group-hover:opacity-100 text-white/40 hover:text-white transition-opacity"
                   title="Remove row"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -182,11 +182,11 @@ export const Routine = () => {
                     key={cellKey}
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, day, timeRow)}
-                    className="relative min-h-[90px] border border-white/10 transition-colors bg-[#080808] hover:bg-neutral-900/80 flex items-center justify-center p-1.5"
+                    className="relative min-h-[95px] rounded-2xl border border-white/10 transition-colors bg-white/[0.03] hover:bg-white/[0.08] flex items-center justify-center p-1.5"
                   >
                     {isEditing ? (
-                      /* DIRECT INLINE CELL INPUT FORM (No dropdowns / modals) */
-                      <div className="w-full h-full bg-black border-2 border-amber-400 rounded-lg p-2 flex flex-col justify-center gap-1.5 z-20 shadow-xl">
+                      /* DIRECT INLINE CELL INPUT FORM */
+                      <div className="w-full h-full bg-black/90 backdrop-blur-2xl border-2 border-white rounded-2xl p-2 flex flex-col justify-center gap-1.5 z-20 shadow-2xl">
                         <input
                           type="text"
                           value={editTitle}
@@ -197,7 +197,7 @@ export const Routine = () => {
                             if (e.key === 'Enter') handleSaveCell(day, timeRow);
                             if (e.key === 'Escape') setEditingCellKey(null);
                           }}
-                          className="w-full bg-white/10 text-white text-xs font-bold px-2 py-1 rounded border border-white/20 outline-none uppercase placeholder-white/40"
+                          className="w-full bg-white/10 text-white text-xs font-bold px-2 py-1 rounded-xl border border-white/20 outline-none uppercase placeholder-white/40"
                         />
                         <input
                           type="text"
@@ -208,50 +208,50 @@ export const Routine = () => {
                             if (e.key === 'Enter') handleSaveCell(day, timeRow);
                             if (e.key === 'Escape') setEditingCellKey(null);
                           }}
-                          className="w-full bg-white/10 text-white text-[10px] px-2 py-1 rounded border border-white/20 outline-none placeholder-white/40"
+                          className="w-full bg-white/10 text-white text-[10px] px-2 py-1 rounded-xl border border-white/20 outline-none placeholder-white/40"
                         />
                         <div className="flex items-center justify-end gap-1 mt-1">
                           <button
                             onClick={() => setEditingCellKey(null)}
-                            className="text-[10px] bg-white/10 hover:bg-white/20 text-white px-2 py-0.5 rounded"
+                            className="text-[10px] bg-white/10 hover:bg-white/20 text-white px-2 py-0.5 rounded-lg"
                           >
                             Cancel
                           </button>
                           <button
                             onClick={() => handleSaveCell(day, timeRow)}
-                            className="text-[10px] bg-white text-black font-bold px-2.5 py-0.5 rounded"
+                            className="text-[10px] bg-white text-black font-bold px-2.5 py-0.5 rounded-lg shadow-sm"
                           >
                             Save
                           </button>
                         </div>
                       </div>
                     ) : cellData ? (
-                      /* FILLED WHITE TASK CARD (Matching reference image) */
+                      /* TRANSLUCENT GLASS TASK CARD */
                       <div
                         draggable
                         onDragStart={(e) => handleDragStart(e, cellData.id)}
                         onClick={() => handleStartEdit(day, timeRow)}
-                        className="w-full h-full bg-white border border-slate-300 rounded-none p-2 sm:p-3 flex flex-col items-center justify-center text-center cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-all shadow-md group relative"
+                        className="w-full h-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 rounded-2xl p-2 sm:p-3 flex flex-col items-center justify-center text-center cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-all shadow-md group relative"
                       >
-                        <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <GripVertical className="w-3.5 h-3.5 text-slate-400" />
+                        <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <GripVertical className="w-3.5 h-3.5 text-white/50" />
                         </div>
-                        <h4 className="font-extrabold text-[#e0531c] text-xs sm:text-sm uppercase tracking-wide leading-tight">
+                        <h4 className="font-extrabold text-white text-xs sm:text-sm uppercase tracking-wide leading-tight drop-shadow-sm">
                           {cellData.title}
                         </h4>
                         {cellData.subtitle && (
-                          <p className="text-[10px] sm:text-xs text-slate-500 font-medium mt-1">
+                          <p className="text-[10px] sm:text-xs text-white/70 font-medium mt-1">
                             {cellData.subtitle}
                           </p>
                         )}
                       </div>
                     ) : (
-                      /* EMPTY CELL (+ Add directly on click) */
+                      /* EMPTY CELL WITH + ICON */
                       <button
                         onClick={() => handleStartEdit(day, timeRow)}
-                        className="w-full h-full flex flex-col items-center justify-center gap-1 text-white/20 hover:text-white/80 hover:bg-white/5 transition-all text-xs font-bold group"
+                        className="w-full h-full flex flex-col items-center justify-center gap-1 text-white/30 hover:text-white hover:bg-white/10 transition-all rounded-2xl group"
                       >
-                        <Plus className="w-4 h-4 text-white/30 group-hover:text-white group-hover:scale-125 transition-all" />
+                        <Plus className="w-4 h-4 text-white/40 group-hover:text-white group-hover:scale-125 transition-all" />
                         <span className="text-[10px] opacity-0 group-hover:opacity-100 transition-opacity uppercase font-mono">Click to Add</span>
                       </button>
                     )}
