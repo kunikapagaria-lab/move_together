@@ -140,10 +140,8 @@ export const Routine = () => {
       <div className="w-full overflow-x-auto custom-scrollbar bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl p-3 shadow-2xl">
         <div className="min-w-[900px] grid grid-cols-[100px_repeat(7,1fr)] sm:grid-cols-[130px_repeat(7,1fr)] gap-2">
           
-          {/* TOP LEFT CORNER CELL */}
-          <div className="bg-white/20 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center p-3 text-white font-black text-xs uppercase tracking-widest shadow-sm">
-            TIME / DAY
-          </div>
+          {/* TOP LEFT CORNER CELL (Empty spacer) */}
+          <div />
 
           {/* 7 DAY HEADER COLUMNS (Top Axis across screen) */}
           {DAYS.map(day => (
