@@ -85,6 +85,19 @@ export const Friends = () => {
             💡 This is your logged-in account (You). Your friends on other accounts can search for <span className="font-bold text-white">{user?.email}</span> to send you a friend request!
           </div>
         )}
+        {/* Searching Indicator */}
+        {isSearching && (
+          <div className="mt-3 p-3 bg-white/5 border border-white/10 rounded-xl text-xs text-white/60 font-medium flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-white animate-ping" /> Searching database...
+          </div>
+        )}
+
+        {/* Empty Search Results */}
+        {!isSearching && searchQuery.length > 2 && searchResults.length === 0 && searchQuery.trim().toLowerCase() !== user?.email?.toLowerCase() && (
+          <div className="mt-3 p-3 bg-white/5 border border-white/10 rounded-xl text-xs text-white/60 font-medium">
+            🔍 No athlete found matching "<span className="text-white font-bold">{searchQuery}</span>". Make sure your friend has registered an account on MOVE TOGETHER!
+          </div>
+        )}
 
         {searchResults.length > 0 && (
           <div className="space-y-2 mt-4">

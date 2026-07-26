@@ -9,20 +9,23 @@ const router = express.Router();
 // @desc    Search users by displayName or email
 router.get('/search', protect, async (req: AuthRequest, res: Response) => {
   const query = req.query.q as string;
-  if (!query) return res.json([]);
+  if (!query || !query.trim()) return res.json([]);
 
   try {
+    const cleanQuery = query.trim();
+    const escapedQuery = cleanQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
     const users = await User.find({
       _id: { $ne: req.user?.id },
       $or: [
-        { displayName: { $regex: query, $options: 'i' } },
-        { email: { $regex: query, $options: 'i' } }
+        { displayName: { $regex: escapedQuery, $options: 'i' } },
+        { email: { $regex: escapedQuery, $options: 'i' } }
       ]
     }).select('displayName email _id');
     
     res.json(users);
   } catch (error) {
-    console.error(error);
+    console.error('Search users error:', error);
     res.status(500).json({ error: 'Server error searching users' });
   }
 });

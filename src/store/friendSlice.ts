@@ -116,6 +116,10 @@ export const friendSlice = createSlice({
         state.isSearching = false;
         state.searchResults = action.payload;
       })
+      .addCase(searchUsers.rejected, (state) => {
+        state.isSearching = false;
+        state.searchResults = [];
+      })
       .addCase(sendFriendRequest.fulfilled, (state, action) => {
         state.friends.push(action.payload);
       })
