@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, UserPlus, Check, X, Users, User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../store';
 import { 
@@ -10,11 +11,12 @@ import {
   rejectFriendRequest,
   clearSearchResults
 } from '../../store/friendSlice';
-import { respondToInvite } from '../../store/notificationSlice';
+import { fetchNotifications, respondToInvite } from '../../store/notificationSlice';
 import { BackButton } from '../../components/ui/BackButton';
 
 export const Friends = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const { user } = useSelector((state: RootState) => state.auth);
   const { friends, searchResults, isSearching } = useSelector((state: RootState) => state.friend);
   const { notifications } = useSelector((state: RootState) => state.notification);
@@ -25,8 +27,10 @@ export const Friends = () => {
 
   useEffect(() => {
     dispatch(fetchFriends());
+    dispatch(fetchNotifications());
     const intervalId = setInterval(() => {
       dispatch(fetchFriends());
+      dispatch(fetchNotifications());
     }, 3000);
     return () => clearInterval(intervalId);
   }, [dispatch]);
@@ -171,26 +175,30 @@ export const Friends = () => {
 
            {/* Group Invites */}
            {groupInvites.map(invite => (
-              <div key={invite._id} className="flex flex-col bg-indigo-900/40 backdrop-blur-xl rounded-xl p-4 border border-indigo-500/30 shadow-lg">
-                <div className="flex items-center gap-2 mb-3">
-                   <div className="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-white">
-                     {invite.relatedData?.inviterName?.charAt(0).toUpperCase() || 'U'}
+              <div key={invite._id} className="flex flex-col bg-gradient-to-br from-indigo-900/60 via-purple-900/40 to-black/80 backdrop-blur-2xl rounded-2xl p-5 border border-indigo-400/40 shadow-xl relative overflow-hidden mb-3">
+                <div className="flex items-center gap-3 mb-3">
+                   <div className="h-10 w-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center font-bold text-black text-lg shadow-lg">
+                     🏆
                    </div>
                    <div className="text-sm">
-                     <p className="text-white font-medium">{invite.relatedData?.inviterName}</p>
-                     <p className="text-indigo-300 text-xs">Invited you to a {invite.relatedData?.durationDays}-Day Challenge</p>
+                     <p className="text-white font-extrabold text-base tracking-wide">
+                       {invite.relatedData?.inviterName || 'A Friend'}
+                     </p>
+                     <p className="text-indigo-200 text-xs">
+                       Invited you to a <span className="font-bold text-white">{invite.relatedData?.durationDays}-Day Group Challenge</span>
+                     </p>
                    </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2.5 mt-1">
                    <button 
-                     onClick={() => dispatch(respondToInvite({ id: invite._id, action: 'accept' }))}
-                     className="flex-1 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg py-2 text-sm font-bold transition-colors"
+                     onClick={() => dispatch(respondToInvite({ id: invite._id, action: 'accept' })).then(() => navigate('/dashboard'))}
+                     className="flex-1 bg-white hover:bg-white/90 text-black rounded-xl py-2.5 text-xs font-extrabold transition-all shadow-lg cursor-pointer"
                    >
-                     Accept
+                     Accept & Join Challenge 🏃
                    </button>
                    <button 
                      onClick={() => dispatch(respondToInvite({ id: invite._id, action: 'decline' }))}
-                     className="flex-1 bg-white/5 hover:bg-white/10 text-white rounded-lg py-2 text-sm font-bold transition-colors"
+                     className="bg-white/10 hover:bg-white/20 text-white/70 hover:text-white rounded-xl px-4 py-2.5 text-xs font-bold transition-all border border-white/10 cursor-pointer"
                    >
                      Decline
                    </button>
