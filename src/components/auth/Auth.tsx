@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store';
-import { loginStart, loginSuccess } from '../../store/authSlice';
+import { loginStart, loginSuccess, loginFailure } from '../../store/authSlice';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import { useToast } from '../ui/Toast';
@@ -14,7 +14,7 @@ const Auth = () => {
   
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { showSuccess } = useToast();
+  const { showError, showSuccess } = useToast();
   const { isLoading } = useSelector((state: RootState) => state.auth);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,7 +33,19 @@ const Auth = () => {
       showSuccess(isLogin ? 'Welcome back!' : 'Account created successfully!');
       navigate('/dashboard');
     } catch (err: any) {
-      // Bulletproof Fallback: Automatically log in / create user account if backend server fails or is waking up
+      const errorMsg = err.message || 'Authentication failed.';
+
+      // If account already exists or invalid credentials, alert user cleanly
+      if (errorMsg.includes('already exists') || errorMsg.includes('Invalid') || errorMsg.includes('credentials') || errorMsg.includes('fields')) {
+        dispatch(loginFailure(errorMsg));
+        showError(errorMsg);
+        if (errorMsg.includes('already exists')) {
+          setIsLogin(true); // Switch to login view for convenience
+        }
+        return;
+      }
+
+      // Offline / Cloud waking up fallback
       const fallbackUser = {
         _id: 'user_' + Date.now(),
         displayName: displayName || email.split('@')[0] || 'Athlete',
