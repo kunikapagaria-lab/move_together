@@ -37,30 +37,49 @@ router.post('/register', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user
+    // Create user with unique authProviderId for local accounts
     const user = await User.create({
       displayName,
       email,
       password: hashedPassword,
-      authProviderId: 'local',
+      authProviderId: `local_${email}`,
     });
 
     if (user) {
-      res.status(201).json({
+      return res.status(201).json({
         _id: user._id,
         displayName: user.displayName,
         email: user.email,
         token: generateToken(user._id.toString()),
       });
     } else {
-      res.status(400).json({ error: 'Invalid user data' });
+      return res.status(400).json({ error: 'Invalid user data' });
     }
   } catch (error: any) {
     console.error('Registration error:', error);
     if (error.code === 11000) {
-      return res.status(400).json({ error: 'An account with this email already exists. Please log in!' });
+      if (error.keyPattern?.email || error.message?.includes('email')) {
+        return res.status(400).json({ error: 'An account with this email already exists. Please log in!' });
+      }
+      // If index error on old authProviderId index, retry with timestamp ID
+      try {
+        const fallbackUser = await User.create({
+          displayName,
+          email,
+          password: hashedPassword,
+          authProviderId: `local_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        });
+        return res.status(201).json({
+          _id: fallbackUser._id,
+          displayName: fallbackUser.displayName,
+          email: fallbackUser.email,
+          token: generateToken(fallbackUser._id.toString()),
+        });
+      } catch (retryErr: any) {
+        return res.status(400).json({ error: 'An account with this email already exists. Please log in!' });
+      }
     }
-    res.status(500).json({ error: error.message || 'Server error during registration' });
+    return res.status(500).json({ error: error.message || 'Server error creating account' });
   }
 });
 
