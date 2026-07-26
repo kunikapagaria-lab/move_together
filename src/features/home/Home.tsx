@@ -47,7 +47,7 @@ export const Home = () => {
 
   // Setup State
   const [showSetup, setShowSetup] = useState(false);
-  const [duration, setDuration] = useState(75);
+  const [duration, setDuration] = useState<number | string>(75);
   const [tasks, setTasks] = useState(defaultTasks);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [invitedFriendIds, setInvitedFriendIds] = useState<string[]>([]);
@@ -78,9 +78,13 @@ export const Home = () => {
   };
 
   const handleStart = async () => {
+    const parsedDuration = typeof duration === 'number' ? duration : parseInt(duration);
+    if (!duration || isNaN(parsedDuration) || parsedDuration <= 0) {
+      return showError('Please enter a valid challenge duration (e.g. 75 days)!');
+    }
     if (tasks.length === 0) return showError('Please add at least one task to your challenge!');
     try {
-      await dispatch(startChallenge({ durationDays: duration, tasks, invitedFriendIds })).unwrap();
+      await dispatch(startChallenge({ durationDays: parsedDuration, tasks, invitedFriendIds })).unwrap();
       await dispatch(fetchChallengeData());
       setShowSetup(false);
       showSuccess('Challenge started successfully! Welcome to Day 1.');
@@ -207,8 +211,9 @@ export const Home = () => {
             min="1" 
             max="365"
             value={duration}
-            onChange={(e) => setDuration(parseInt(e.target.value) || 1)}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-xl font-bold font-mono"
+            onChange={(e) => setDuration(e.target.value)}
+            placeholder="Enter duration (e.g. 75)"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-xl font-bold font-mono placeholder-white/30"
           />
         </div>
 
