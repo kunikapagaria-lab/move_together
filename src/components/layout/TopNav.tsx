@@ -50,15 +50,15 @@ export const TopNav = () => {
       <div className="max-w-7xl mx-auto flex items-center justify-between relative">
         
         {/* Brand */}
-        <div className="flex items-center gap-2.5 cursor-pointer group" onClick={() => navigate('/home')}>
-          <div className="h-9 w-9 sm:h-10 sm:w-10 bg-black/30 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center text-lg sm:text-xl shadow-md group-hover:bg-black/50 transition-all">
+        <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => navigate('/home')}>
+          <div className="h-9 w-9 sm:h-10 sm:w-10 bg-white/20 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center text-lg sm:text-xl shadow-md">
             🏃
           </div>
           <span className="text-white font-black tracking-wider text-base sm:text-xl uppercase font-sans">MOVE TOGETHER</span>
         </div>
 
-        {/* Center Nav (Desktop & Tablet - Clean minimal text pills, NO white background box) */}
-        <div className="hidden sm:flex items-center gap-1 md:gap-2">
+        {/* Center Nav (Desktop & Tablet) */}
+        <div className="hidden sm:flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-1.5 shadow-inner">
           {navItems.map((item) => {
             let hasBadge = false;
             
@@ -73,10 +73,10 @@ export const TopNav = () => {
                 key={item.path}
                 to={item.path}
                 className={({ isActive }) => cn(
-                  "relative flex items-center justify-center px-4 py-2 text-xs sm:text-sm font-bold transition-all duration-200",
+                  "relative flex items-center justify-center px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200",
                   isActive 
-                    ? "text-white font-extrabold border-b-2 border-white pb-1" 
-                    : "text-white/60 hover:text-white"
+                    ? "text-white bg-white/20 shadow-md border border-white/20" 
+                    : "text-white/70 hover:text-white hover:bg-white/10"
                 )}
               >
                 <>
@@ -92,10 +92,10 @@ export const TopNav = () => {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3 relative" ref={dropdownRef}>
-          {/* Athlete Rank Pill (Dark obsidian tint, NO white box background) */}
+          {/* Athlete Rank Pill with Hover Tooltip (No Popup Box) */}
           <div className="relative group">
             <div 
-              className="flex items-center gap-1.5 bg-black/30 hover:bg-black/50 border border-white/20 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold text-white tracking-widest uppercase transition-all cursor-pointer shadow-md"
+              className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 border border-white/20 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold text-white tracking-widest uppercase transition-all cursor-pointer shadow-md"
             >
               <span>{rank.badge}</span>
               <span>{rank.name}</span>
@@ -138,7 +138,7 @@ export const TopNav = () => {
           {/* Profile Dropdown Toggle */}
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center justify-center h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-black/30 hover:bg-black/50 border border-white/30 text-white font-bold text-sm shadow-md transition-all cursor-pointer"
+            className="flex items-center justify-center h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-white/20 hover:bg-white/30 border border-white/30 text-white font-bold text-sm shadow-md transition-all cursor-pointer"
           >
             {user?.displayName?.charAt(0).toUpperCase() || <User className="h-4 w-4 sm:h-5 sm:w-5" />}
           </button>
