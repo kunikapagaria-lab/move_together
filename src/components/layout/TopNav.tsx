@@ -47,19 +47,19 @@ export const TopNav = () => {
 
   return (
     <>
-      <nav className="w-full py-6 px-4 md:px-8">
+      <nav className="w-full py-4 sm:py-6 px-4 md:px-8">
       <div className="max-w-7xl mx-auto flex items-center justify-between relative">
         
         {/* Brand */}
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/home')}>
-          <div className="h-10 w-10 bg-white/20 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center text-xl shadow-md">
+        <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => navigate('/home')}>
+          <div className="h-9 w-9 sm:h-10 sm:w-10 bg-white/20 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center text-lg sm:text-xl shadow-md">
             🏃
           </div>
-          <span className="text-white font-black tracking-wider text-xl uppercase font-sans">MOVE TOGETHER</span>
+          <span className="text-white font-black tracking-wider text-base sm:text-xl uppercase font-sans">MOVE TOGETHER</span>
         </div>
 
-        {/* Center Nav */}
-        <div className="hidden md:flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-1.5 shadow-inner">
+        {/* Center Nav (Desktop & Tablet) */}
+        <div className="hidden sm:flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-1.5 shadow-inner">
           {navItems.map((item) => {
             let hasBadge = false;
             
@@ -74,7 +74,7 @@ export const TopNav = () => {
                 key={item.path}
                 to={item.path}
                 className={({ isActive }) => cn(
-                  "relative flex items-center justify-center px-5 py-2 rounded-xl text-sm font-bold transition-all duration-200",
+                  "relative flex items-center justify-center px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200",
                   isActive 
                     ? "text-white bg-white/20 shadow-md border border-white/20" 
                     : "text-white/70 hover:text-white hover:bg-white/10"
@@ -92,11 +92,11 @@ export const TopNav = () => {
           })}
         </div>
 
-        <div className="flex items-center gap-3 relative" ref={dropdownRef}>
+        <div className="flex items-center gap-2 sm:gap-3 relative" ref={dropdownRef}>
           {/* Athlete Rank Pill */}
           <button 
             onClick={() => setIsRankModalOpen(true)}
-            className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 border border-white/20 px-4 py-2 rounded-full text-xs font-bold text-white tracking-widest uppercase transition-all cursor-pointer shadow-md"
+            className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 border border-white/20 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold text-white tracking-widest uppercase transition-all cursor-pointer shadow-md"
             title="View Rank Roadmap & Locked Tiers"
           >
             <span>{rank.badge}</span>
@@ -106,14 +106,14 @@ export const TopNav = () => {
           {/* Profile Dropdown Toggle */}
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center justify-center h-10 w-10 rounded-full bg-white/20 hover:bg-white/30 border border-white/30 text-white font-bold text-sm shadow-md transition-all cursor-pointer"
+            className="flex items-center justify-center h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-white/20 hover:bg-white/30 border border-white/30 text-white font-bold text-sm shadow-md transition-all cursor-pointer"
           >
-            {user?.displayName?.charAt(0).toUpperCase() || <User className="h-5 w-5" />}
+            {user?.displayName?.charAt(0).toUpperCase() || <User className="h-4 w-4 sm:h-5 sm:w-5" />}
           </button>
 
           {/* Dropdown Menu */}
           {isDropdownOpen && (
-            <div className="absolute top-12 right-0 w-56 bg-black border border-white/20 rounded-2xl shadow-2xl overflow-hidden py-2 animate-in fade-in slide-in-from-top-2">
+            <div className="absolute top-12 right-0 w-56 bg-black/95 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden py-2 animate-in fade-in slide-in-from-top-2 z-50">
               <div className="px-4 py-3 border-b border-white/10">
                 <p className="text-sm font-bold text-white">{user?.displayName}</p>
                 <p className="text-xs text-white/50 truncate">{user?.email}</p>
@@ -153,6 +153,42 @@ export const TopNav = () => {
         </div>
       </div>
     </nav>
+
+    {/* MOBILE BOTTOM GLASS NAVIGATION BAR */}
+    <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-2xl border-t border-white/20 px-3 py-2 flex items-center justify-around shadow-[0_-10px_25px_rgba(0,0,0,0.5)]">
+      {navItems.map((item) => {
+        let hasBadge = false;
+        if (item.name === 'Friends') {
+          const pendingRequests = friends.filter(f => f.status === 'pending' && f.recipient._id === user?._id).length;
+          const pendingInvites = notifications.filter(n => n.type === 'group_invite' && !n.read).length;
+          if (pendingRequests > 0 || pendingInvites > 0) hasBadge = true;
+        }
+
+        return (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={({ isActive }) => cn(
+              "relative flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all duration-200",
+              isActive 
+                ? "text-white bg-white/20 font-bold border border-white/20" 
+                : "text-white/60 hover:text-white"
+            )}
+          >
+            {({ isActive }) => (
+              <>
+                <item.icon className={cn("h-5 w-5 mb-0.5", isActive ? "text-white" : "")} />
+                <span className="text-[10px] tracking-wide font-medium">{item.name}</span>
+                {hasBadge && (
+                  <span className="absolute top-1 right-2 w-2 h-2 bg-white rounded-full animate-pulse shadow-sm" />
+                )}
+              </>
+            )}
+          </NavLink>
+        );
+      })}
+    </div>
+
     <AthleteRanksModal 
       isOpen={isRankModalOpen} 
       onClose={() => setIsRankModalOpen(false)} 
