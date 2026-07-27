@@ -312,8 +312,10 @@ export const Home = () => {
   // ==========================================
   // STATE B: ACTIVE CHALLENGE (COMMAND CENTER)
   // ==========================================
-  const completedCount = todayLog?.completedTaskIds?.length || 0;
-  const totalCount = activeChallenge.tasks.length;
+  const activeTaskIds = (activeChallenge?.tasks || []).map((t: any) => t.id);
+  const rawCompleted = (todayLog?.completedTaskIds || []).filter((id: string) => activeTaskIds.includes(id)).length;
+  const totalCount = activeChallenge?.tasks?.length || 8;
+  const completedCount = Math.min(rawCompleted, totalCount);
   
   // Group logic for widget
   const group = myGroups[0];

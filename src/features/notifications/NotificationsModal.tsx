@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertTriangle } from 'lucide-react';
 import type { AppDispatch, RootState } from '../../store';
 import { fetchNotifications, markRead } from '../../store/notificationSlice';
 
@@ -31,33 +30,39 @@ export const NotificationsModal = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
+        className="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
       >
         <motion.div 
           initial={{ scale: 0.9, y: 20 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.9, y: 20 }}
-          className="bg-[#1a1525] border border-rose-500/30 shadow-[0_0_50px_rgba(244,63,94,0.2)] rounded-3xl p-8 md:p-12 w-full max-w-xl text-center relative overflow-hidden"
+          className="bg-black/95 border border-white/20 shadow-2xl rounded-3xl p-6 sm:p-8 w-full max-w-md text-center relative overflow-hidden"
         >
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-rose-600 to-orange-500" />
+          {/* Top Amber Accent Line */}
+          <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#e0531c] via-[#b54619] to-amber-500" />
           
-          <div className="flex justify-center mb-6">
-            <div className="bg-rose-500/20 p-4 rounded-full border border-rose-500/30">
-              <AlertTriangle className="w-12 h-12 text-rose-500" />
+          <div className="flex justify-center mb-4">
+            <div className="bg-white/10 p-4 rounded-2xl border border-white/20 shadow-lg text-3xl">
+              🛡️
             </div>
           </div>
           
-          <h2 className="text-4xl font-extrabold text-white mb-4 tracking-tight">Challenge Failed</h2>
+          <h2 
+            style={{ fontFamily: "'Oswald', sans-serif" }}
+            className="text-3xl font-black text-white mb-2 uppercase tracking-wide"
+          >
+            CHALLENGE RESET
+          </h2>
           
-          <p className="text-xl text-white/80 leading-relaxed mb-8">
-            {failureNotification.message}
+          <p className="text-xs sm:text-sm text-white/70 leading-relaxed mb-6 font-medium">
+            {failureNotification.message || "A task was missed yesterday. Your streak has reset so you can build back stronger today."}
           </p>
 
           <button 
             onClick={handleAcknowledge}
-            className="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold text-xl rounded-2xl py-4 shadow-lg transition-colors"
+            className="w-full bg-white hover:bg-white/90 text-black font-extrabold uppercase tracking-widest text-xs py-3.5 rounded-2xl shadow-xl transition-all cursor-pointer"
           >
-            I Understand. Start Over.
+            Start Fresh Today 🏃
           </button>
         </motion.div>
       </motion.div>
