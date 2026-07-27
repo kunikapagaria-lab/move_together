@@ -68,6 +68,8 @@ const getTodayStr = () => {
 
 import ActiveChallenge from '../models/ActiveChallenge';
 
+import ChallengeGroup from '../models/ChallengeGroup';
+
 // @route   GET /api/groups/my-groups
 // @desc    Get all groups the user is part of, including member details
 router.get('/my-groups', protect, async (req: AuthRequest, res: Response) => {
@@ -75,18 +77,60 @@ router.get('/my-groups', protect, async (req: AuthRequest, res: Response) => {
   const todayStr = getTodayStr();
 
   try {
-    const groups = await Group.find({ members: userId })
-      .populate('members', 'displayName email')
-      .exec();
+    // Query both Group and ChallengeGroup collections for complete backwards compatibility
+    const [rawGroups, rawChallengeGroups] = await Promise.all([
+      Group.find({ $or: [{ members: userId }, { 'members.userId': userId }] })
+        .populate('members', 'displayName email')
+        .populate('members.userId', 'displayName email')
+        .exec(),
+      ChallengeGroup.find({ $or: [{ members: userId }, { creatorId: userId }] })
+        .populate('members', 'displayName email')
+        .populate('creatorId', 'displayName email')
+        .exec()
+    ]);
 
-    // Now, let's fetch streak, dynamic total tasks, and todayCompleted for each member
-    const enrichedGroups = await Promise.all(groups.map(async (group) => {
-      const enrichedMembers = await Promise.all(group.members.map(async (member: any) => {
-        const memberUserId = member._id || member;
+    // Normalize all groups into a unified structure
+    const allGroups = [
+      ...rawGroups.map((g: any) => ({
+        _id: g._id,
+        name: g.name,
+        joinCode: g.joinCode,
+        challengeTemplateId: g.challengeTemplateId,
+        wagerAmount: g.wagerAmount,
+        createdAt: g.createdAt,
+        rawMembers: (g.members || []).map((m: any) => m.userId || m)
+      })),
+      ...rawChallengeGroups.map((cg: any) => ({
+        _id: cg._id,
+        name: cg.name,
+        joinCode: (cg as any).joinCode || '',
+        challengeTemplateId: cg._id,
+        wagerAmount: 0,
+        createdAt: cg.createdAt,
+        rawMembers: (cg.members || []).map((m: any) => m.userId || m)
+      }))
+    ];
 
-        // Fetch active challenge for custom task count
+    // Deduplicate by group _id string
+    const uniqueGroupsMap = new Map();
+    for (const g of allGroups) {
+      uniqueGroupsMap.set(g._id.toString(), g);
+    }
+    const uniqueGroups = Array.from(uniqueGroupsMap.values());
+
+    const enrichedGroups = await Promise.all(uniqueGroups.map(async (group) => {
+      const enrichedMembers = await Promise.all(group.rawMembers.map(async (member: any) => {
+        if (!member) return null;
+        const memberUserId = member._id ? member._id.toString() : member.toString();
+
+        // Check if member has an active challenge.
+        // UNACCEPTED INVITEES WILL NOT HAVE AN ACTIVE CHALLENGE AND MUST BE FILTERED OUT!
         const activeCh = await ActiveChallenge.findOne({ userId: memberUserId, status: 'active' });
-        const memberTasks = activeCh?.tasks || [];
+        if (!activeCh) {
+          return null; // Exclude unaccepted invited friends!
+        }
+
+        const memberTasks = activeCh.tasks || [];
         const totalTasks = memberTasks.length > 0 ? memberTasks.length : 8;
 
         const logs = await DailyLog.find({ userId: memberUserId }).sort({ date: -1 });
@@ -122,11 +166,11 @@ router.get('/my-groups', protect, async (req: AuthRequest, res: Response) => {
 
         return {
           userId: {
-            _id: member._id,
+            _id: member._id || memberUserId,
             displayName: member.displayName || 'Athlete',
             email: member.email || ''
           },
-          joinedAt: (group as any).createdAt,
+          joinedAt: group.createdAt,
           streak,
           todayCompleted,
           totalTasks,
@@ -134,13 +178,16 @@ router.get('/my-groups', protect, async (req: AuthRequest, res: Response) => {
         };
       }));
 
+      // Filter out nulls (unaccepted invited friends)
+      const validMembers = enrichedMembers.filter(m => m !== null);
+
       return {
         _id: group._id,
         name: group.name,
-        joinCode: (group as any).joinCode,
+        joinCode: group.joinCode,
         challengeTemplateId: group.challengeTemplateId,
-        wagerAmount: (group as any).wagerAmount,
-        members: enrichedMembers
+        wagerAmount: group.wagerAmount,
+        members: validMembers
       };
     }));
 
