@@ -121,9 +121,13 @@ import mongoose from 'mongoose';
 // @desc    Wipe all collections in database for a 100% clean slate
 router.post('/clear-all-data', async (req, res) => {
   try {
-    const collections = mongoose.connection.collections;
-    for (const key in collections) {
-      await collections[key].deleteMany({});
+    const db = mongoose.connection.db;
+    if (!db) {
+      return res.status(500).json({ error: 'Database connection not ready' });
+    }
+    const collections = await db.listCollections().toArray();
+    for (const col of collections) {
+      await db.collection(col.name).deleteMany({});
     }
     res.json({ message: 'Database cleared 100% clean! All users and data purged.' });
   } catch (error: any) {
