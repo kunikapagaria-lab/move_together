@@ -1,6 +1,7 @@
 import express, { Response } from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
+import helmet from 'helmet';
 import dotenv from 'dotenv';
 import DailyLog from './models/DailyLog';
 import User from './models/User';
@@ -14,8 +15,15 @@ import friendRoutes from './routes/friends';
 import notificationRoutes from './routes/notifications';
 import integrationRoutes from './routes/integrations';
 import { startCronJobs } from './cron/midnightReset';
+import { corsOptions } from './config/cors';
+import { authLimiter } from './middleware/rateLimiter';
 
 dotenv.config();
+
+if (!process.env.JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET is not set in the environment. Set it in backend/.env before starting the server.');
+  process.exit(1);
+}
 
 // Start cron jobs
 startCronJobs();
@@ -23,28 +31,8 @@ startCronJobs();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like server-to-server or mobile apps)
-    if (!origin) return callback(null, true);
-    
-    // Always allow any Vercel domain or localhost
-    if (origin.endsWith('.vercel.app') || origin.includes('localhost') || process.env.CLIENT_URL === '*' || !process.env.CLIENT_URL) {
-      return callback(null, true);
-    }
-
-    const clientUrl = process.env.CLIENT_URL.startsWith('http') 
-      ? process.env.CLIENT_URL 
-      : `https://${process.env.CLIENT_URL}`;
-
-    if (origin === clientUrl) {
-      return callback(null, true);
-    }
-
-    return callback(null, true);
-  },
-  credentials: true
-}));
+app.use(helmet());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Connect to MongoDB
@@ -65,7 +53,7 @@ if (process.env.MONGODB_URI) {
 }
 
 // Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/challenges', challengeRoutes);
 app.use('/api/logs', logRoutes);
 app.use('/api/groups', groupRoutes);

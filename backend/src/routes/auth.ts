@@ -2,12 +2,18 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
+import { protect, AuthRequest } from '../middleware/auth';
 
 const router = express.Router();
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 // Generate JWT
 const generateToken = (id: string) => {
-  const secret = process.env.JWT_SECRET || 'move_together_jwt_secret_key_2026';
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET is not configured on the server');
+  }
   return jwt.sign({ id }, secret, {
     expiresIn: '30d',
   });
@@ -22,8 +28,18 @@ router.post('/register', async (req, res) => {
     return res.status(400).json({ error: 'Please include all fields' });
   }
 
-  email = email.toLowerCase().trim();
-  displayName = displayName.trim();
+  email = String(email).toLowerCase().trim();
+  displayName = String(displayName).trim();
+
+  if (!EMAIL_REGEX.test(email)) {
+    return res.status(400).json({ error: 'Please enter a valid email address' });
+  }
+  if (displayName.length < 1 || displayName.length > 40) {
+    return res.status(400).json({ error: 'Display name must be between 1 and 40 characters' });
+  }
+  if (typeof password !== 'string' || password.length < 6) {
+    return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  }
 
   let hashedPassword = '';
   try {
@@ -80,7 +96,7 @@ router.post('/register', async (req, res) => {
         return res.status(400).json({ error: 'An account with this email already exists. Please log in!' });
       }
     }
-    return res.status(500).json({ error: error.message || 'Server error creating account' });
+    return res.status(500).json({ error: 'Server error creating account' });
   }
 });
 
@@ -93,7 +109,7 @@ router.post('/login', async (req, res) => {
     return res.status(400).json({ error: 'Please enter email and password' });
   }
 
-  email = email.toLowerCase().trim();
+  email = String(email).toLowerCase().trim();
 
   try {
     // Check for user email
@@ -111,28 +127,42 @@ router.post('/login', async (req, res) => {
     }
   } catch (error: any) {
     console.error('Login error:', error);
-    res.status(500).json({ error: error.message || 'Server error during login' });
+    res.status(500).json({ error: 'Server error during login' });
   }
 });
 
-import mongoose from 'mongoose';
+// @route   PUT /api/auth/change-password
+// @desc    Change the logged-in user's password
+router.put('/change-password', protect, async (req: AuthRequest, res) => {
+  const userId = req.user?.id;
+  const { currentPassword, newPassword } = req.body;
 
-// @route   POST /api/auth/clear-all-data
-// @desc    Wipe all collections in database for a 100% clean slate
-router.post('/clear-all-data', async (req, res) => {
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: 'Please provide your current and new password' });
+  }
+  if (typeof newPassword !== 'string' || newPassword.length < 6) {
+    return res.status(400).json({ error: 'New password must be at least 6 characters' });
+  }
+
   try {
-    const db = mongoose.connection.db;
-    if (!db) {
-      return res.status(500).json({ error: 'Database connection not ready' });
+    const user = await User.findById(userId);
+    if (!user || !user.password) {
+      return res.status(404).json({ error: 'User not found' });
     }
-    const collections = await db.listCollections().toArray();
-    for (const col of collections) {
-      await db.collection(col.name).deleteMany({});
+
+    const matches = await bcrypt.compare(currentPassword, user.password);
+    if (!matches) {
+      return res.status(401).json({ error: 'Current password is incorrect' });
     }
-    res.json({ message: 'Database cleared 100% clean! All users and data purged.' });
-  } catch (error: any) {
-    console.error('Clear DB error:', error);
-    res.status(500).json({ error: error.message || 'Failed to clear database' });
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({ error: 'Server error changing password' });
   }
 });
 
