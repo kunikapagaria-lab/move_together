@@ -38,6 +38,7 @@ router.put('/:id/read', protect, async (req: AuthRequest, res: Response) => {
 
 import ActiveChallenge from '../models/ActiveChallenge';
 import ChallengeGroup from '../models/ChallengeGroup';
+import Group from '../models/Group';
 
 // @route   POST /api/notifications/:id/respond
 // @desc    Respond to a group invite notification (accept/decline)
@@ -68,10 +69,15 @@ router.post('/:id/respond', protect, async (req: AuthRequest, res: Response) => 
         status: 'active'
       });
 
-      // Add to group
-      await ChallengeGroup.findByIdAndUpdate(notification.relatedData.groupId, {
-        $addToSet: { members: userId }
-      });
+      // Add user to Group and ChallengeGroup upon explicit acceptance
+      if (notification.relatedData?.groupId) {
+        await Group.findByIdAndUpdate(notification.relatedData.groupId, {
+          $addToSet: { members: userId }
+        });
+        await ChallengeGroup.findByIdAndUpdate(notification.relatedData.groupId, {
+          $addToSet: { members: userId }
+        });
+      }
     }
 
     // Mark notification as read

@@ -4,6 +4,7 @@ import ChallengeTemplate from '../models/ChallengeTemplate';
 
 import ActiveChallenge from '../models/ActiveChallenge';
 import ChallengeGroup from '../models/ChallengeGroup';
+import Group from '../models/Group';
 import Notification from '../models/Notification';
 import User from '../models/User';
 
@@ -37,7 +38,15 @@ router.post('/start', protect, async (req: AuthRequest, res: Response) => {
       const user = await User.findById(userId);
       const groupName = `${user?.displayName || 'User'}'s Challenge`;
 
-      groupCreated = await ChallengeGroup.create({
+      groupCreated = await Group.create({
+        name: groupName,
+        challengeTemplateId: challenge._id as any,
+        startDate: new Date(),
+        members: [userId as any],
+        wagerPot: 0
+      });
+
+      await ChallengeGroup.create({
         name: groupName,
         creatorId: userId,
         members: [userId as any],

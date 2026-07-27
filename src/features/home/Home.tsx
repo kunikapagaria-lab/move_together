@@ -65,6 +65,10 @@ export const Home = () => {
     dispatch(fetchChallengeData());
     dispatch(fetchMyGroups());
     dispatch(fetchFriends());
+    const intervalId = setInterval(() => {
+      dispatch(fetchMyGroups());
+    }, 3000);
+    return () => clearInterval(intervalId);
   }, [dispatch]);
 
   const handleApplyPreset = (preset: ChallengePreset) => {
