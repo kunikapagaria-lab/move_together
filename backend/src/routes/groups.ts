@@ -75,14 +75,14 @@ router.get('/my-groups', protect, async (req: AuthRequest, res: Response) => {
   const todayStr = getTodayStr();
 
   try {
-    const groups = await Group.find({ 'members.userId': userId })
-      .populate('members.userId', 'displayName email')
+    const groups = await Group.find({ members: userId })
+      .populate('members', 'displayName email')
       .exec();
 
     // Now, let's fetch streak, dynamic total tasks, and todayCompleted for each member
     const enrichedGroups = await Promise.all(groups.map(async (group) => {
       const enrichedMembers = await Promise.all(group.members.map(async (member: any) => {
-        const memberUserId = member.userId._id;
+        const memberUserId = member._id || member;
 
         // Fetch active challenge for custom task count
         const activeCh = await ActiveChallenge.findOne({ userId: memberUserId, status: 'active' });
@@ -121,8 +121,12 @@ router.get('/my-groups', protect, async (req: AuthRequest, res: Response) => {
         }));
 
         return {
-          userId: member.userId,
-          joinedAt: member.joinedAt,
+          userId: {
+            _id: member._id,
+            displayName: member.displayName || 'Athlete',
+            email: member.email || ''
+          },
+          joinedAt: (group as any).createdAt,
           streak,
           todayCompleted,
           totalTasks,
@@ -161,7 +165,7 @@ router.post('/invite-friends', protect, async (req: AuthRequest, res: Response) 
 
   try {
     const user = await User.findById(userId);
-    let group = await Group.findOne({ 'members.userId': userId }).sort({ createdAt: -1 });
+    let group = await Group.findOne({ members: userId }).sort({ createdAt: -1 });
     const activeCh = await ActiveChallenge.findOne({ userId, status: 'active' });
 
     if (!group && activeCh) {
@@ -169,7 +173,7 @@ router.post('/invite-friends', protect, async (req: AuthRequest, res: Response) 
         name: `${user?.displayName || 'Athlete'}'s Crew`,
         challengeTemplateId: activeCh._id as any,
         startDate: activeCh.startDate,
-        members: [{ userId: userId as any, joinedAt: new Date() }] as any,
+        members: [userId as any],
         wagerPot: 0
       });
     }
