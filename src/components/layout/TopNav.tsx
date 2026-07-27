@@ -111,7 +111,7 @@ export const TopNav = () => {
           <div className="h-9 w-9 sm:h-10 sm:w-10 bg-[#e0531c]/20 backdrop-blur-md border border-[#e0531c]/30 rounded-2xl flex items-center justify-center text-lg sm:text-xl shadow-md group-hover:bg-[#e0531c]/30 transition-all">
             🏃
           </div>
-          <span className="text-white font-black tracking-wider text-base sm:text-xl uppercase font-sans">MOVE TOGETHER</span>
+          <span className="text-white font-black tracking-wider text-base sm:text-xl uppercase font-sans">MOVETRIBE</span>
         </div>
 
         {/* Center Nav (Desktop & Tablet) */}

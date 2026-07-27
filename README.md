@@ -1,4 +1,4 @@
-# Move Together
+# MoveTribe
 
 A 75-day habit challenge tracker with crews, streaks, and friend accountability.
 React + Vite frontend, Express + MongoDB backend.

@@ -46,7 +46,7 @@ const DEFAULT_CELLS: TimetableCell[] = [
 
 const loadInitialCells = (): TimetableCell[] => {
   try {
-    const saved = localStorage.getItem('move_together_timetable_cells');
+    const saved = localStorage.getItem('movetribe_timetable_cells');
     return saved ? JSON.parse(saved) : DEFAULT_CELLS;
   } catch (e) {
     return DEFAULT_CELLS;
@@ -55,7 +55,7 @@ const loadInitialCells = (): TimetableCell[] => {
 
 const loadInitialRows = (): string[] => {
   try {
-    const saved = localStorage.getItem('move_together_timetable_rows');
+    const saved = localStorage.getItem('movetribe_timetable_rows');
     return saved ? JSON.parse(saved) : DEFAULT_TIME_ROWS;
   } catch (e) {
     return DEFAULT_TIME_ROWS;
@@ -92,7 +92,7 @@ const routineSlice = createSlice({
           });
         }
       }
-      localStorage.setItem('move_together_timetable_cells', JSON.stringify(state.cells));
+      localStorage.setItem('movetribe_timetable_cells', JSON.stringify(state.cells));
     },
 
     moveCell: (state, action: PayloadAction<{ cellId: string; targetDay: TimetableCell['day']; targetTimeRow: string }>) => {
@@ -103,27 +103,27 @@ const routineSlice = createSlice({
         state.cells = state.cells.filter(c => !(c.day === targetDay && c.timeRow === targetTimeRow));
         cell.day = targetDay;
         cell.timeRow = targetTimeRow;
-        localStorage.setItem('move_together_timetable_cells', JSON.stringify(state.cells));
+        localStorage.setItem('movetribe_timetable_cells', JSON.stringify(state.cells));
       }
     },
 
     deleteCell: (state, action: PayloadAction<string>) => {
       state.cells = state.cells.filter(c => c.id !== action.payload);
-      localStorage.setItem('move_together_timetable_cells', JSON.stringify(state.cells));
+      localStorage.setItem('movetribe_timetable_cells', JSON.stringify(state.cells));
     },
 
     addTimeRow: (state, action: PayloadAction<string>) => {
       if (!state.timeRows.includes(action.payload)) {
         state.timeRows.push(action.payload);
-        localStorage.setItem('move_together_timetable_rows', JSON.stringify(state.timeRows));
+        localStorage.setItem('movetribe_timetable_rows', JSON.stringify(state.timeRows));
       }
     },
 
     removeTimeRow: (state, action: PayloadAction<string>) => {
       state.timeRows = state.timeRows.filter(r => r !== action.payload);
       state.cells = state.cells.filter(c => c.timeRow !== action.payload);
-      localStorage.setItem('move_together_timetable_rows', JSON.stringify(state.timeRows));
-      localStorage.setItem('move_together_timetable_cells', JSON.stringify(state.cells));
+      localStorage.setItem('movetribe_timetable_rows', JSON.stringify(state.timeRows));
+      localStorage.setItem('movetribe_timetable_cells', JSON.stringify(state.cells));
     }
   }
 });

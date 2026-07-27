@@ -59,7 +59,7 @@ const Auth = () => {
             style={{ fontFamily: "'Oswald', sans-serif" }}
             className="text-3xl sm:text-4xl font-black uppercase tracking-wider text-white"
           >
-            MOVE TOGETHER
+            MoveTribe
           </h1>
           <p className="text-xs text-white/70 font-medium tracking-wide mt-1">
             Build discipline. Every rep counts.

@@ -20,7 +20,7 @@ export interface ChallengePreset {
 export const PRESET_TEMPLATES: ChallengePreset[] = [
   {
     id: 'grit-75',
-    title: 'Classic Move Together (Mental Grit)',
+    title: 'Classic MoveTribe (Mental Grit)',
     tagline: 'The ultimate mental toughness program',
     durationDays: 75,
     badge: '🔥 GRIT',
