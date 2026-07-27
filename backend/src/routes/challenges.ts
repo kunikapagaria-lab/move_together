@@ -35,37 +35,34 @@ router.post('/start', protect, async (req: AuthRequest, res: Response) => {
       status: 'active'
     });
 
-    let groupCreated = null;
+    const user = await User.findById(userId);
+    const groupName = `${user?.displayName || 'Athlete'}'s Challenge`;
 
-    // Handle Group creation if invited friends exist
-    if (invitedFriendIds && invitedFriendIds.length > 0) {
-      const user = await User.findById(userId);
-      const groupName = `${user?.displayName || 'User'}'s Challenge`;
+    const groupCreated = await Group.create({
+      name: groupName,
+      challengeTemplateId: challenge._id as any,
+      startDate: new Date(),
+      members: [userId as any],
+      wagerPot: 0
+    });
 
-      groupCreated = await Group.create({
-        name: groupName,
-        challengeTemplateId: challenge._id as any,
-        startDate: new Date(),
-        members: [userId as any],
-        wagerPot: 0
-      });
+    await ChallengeGroup.create({
+      name: groupName,
+      creatorId: userId,
+      members: [userId as any],
+      durationDays: durationDays || 75,
+      tasks,
+      startDate: new Date(),
+      isActive: true
+    });
 
-      await ChallengeGroup.create({
-        name: groupName,
-        creatorId: userId,
-        members: [userId as any],
-        durationDays: durationDays || 75,
-        tasks,
-        startDate: new Date(),
-        isActive: true
-      });
-
-      // Send notifications (invites) to friends
+    // Send notifications (invites) to friends if provided
+    if (invitedFriendIds && Array.isArray(invitedFriendIds)) {
       for (const friendId of invitedFriendIds) {
         await Notification.create({
           userId: friendId,
           type: 'group_invite',
-          message: `${user?.displayName} invited you to join a ${durationDays || 75}-day challenge!`,
+          message: `${user?.displayName || 'A friend'} invited you to join a ${durationDays || 75}-day challenge!`,
           relatedData: {
             groupId: (groupCreated as any)._id,
             durationDays: durationDays || 75,

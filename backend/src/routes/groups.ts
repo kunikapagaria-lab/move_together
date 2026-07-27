@@ -1,4 +1,5 @@
 import express, { Response } from 'express';
+import mongoose from 'mongoose';
 import { protect, AuthRequest } from '../middleware/auth';
 import Group from '../models/Group';
 import User from '../models/User';
@@ -123,9 +124,19 @@ router.get('/my-groups', protect, async (req: AuthRequest, res: Response) => {
         if (!member) return null;
         const memberUserId = member._id ? member._id.toString() : member.toString();
 
-        // Check if member has an active challenge.
-        // UNACCEPTED INVITEES WILL NOT HAVE AN ACTIVE CHALLENGE AND MUST BE FILTERED OUT!
-        const activeCh = await ActiveChallenge.findOne({ userId: memberUserId, status: 'active' });
+        let objectIdMember: any = null;
+        try {
+          objectIdMember = new mongoose.Types.ObjectId(memberUserId);
+        } catch (e) {}
+
+        const queryIds = objectIdMember ? [memberUserId, objectIdMember] : [memberUserId];
+
+        // Check if member has an active challenge matching string or ObjectId
+        const activeCh = await ActiveChallenge.findOne({
+          userId: { $in: queryIds },
+          status: 'active'
+        });
+
         if (!activeCh) {
           return null; // Exclude unaccepted invited friends!
         }
