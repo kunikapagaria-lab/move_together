@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Sparkles, Plus, Trash2, XCircle, ArrowLeft, ShieldCheck, UserPlus } from 'lucide-react';
+import { Users, Sparkles, Plus, Trash2, XCircle, ArrowLeft, ShieldCheck, UserPlus, Eye, Zap, HeartHandshake } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../store';
@@ -15,6 +15,7 @@ import { AthleteRanksModal } from '../ranks/AthleteRanksModal';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
 import { useToast } from '../../components/ui/Toast';
 import { MidChallengeInviteModal } from '../../components/ui/MidChallengeInviteModal';
+import { FriendInspectModal } from '../trio/FriendInspectModal';
 
 const QUOTES = [
   "Discipline is choosing between what you want now and what you want most.",
@@ -58,8 +59,17 @@ export const Home = () => {
   const [isRankModalOpen, setIsRankModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isMidChallengeInviteOpen, setIsMidChallengeInviteOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<any | null>(null);
 
   const rank = getAthleteRank(streak);
+
+  const handleNudge = (name: string) => {
+    showSuccess(`🔥 Sent a Discipline Nudge to ${name}!`);
+  };
+
+  const handleCheer = (name: string) => {
+    showSuccess(`👏 Sent a Cheer to ${name}! Keep pushing!`);
+  };
 
   useEffect(() => {
     dispatch(fetchChallengeData());
@@ -491,23 +501,55 @@ export const Home = () => {
            </div>
            
            <div className="space-y-2.5">
-             {group.members.map((member, idx) => (
-               <div key={member.userId._id} className="flex items-center justify-between bg-white/10 border border-white/15 rounded-2xl p-3">
-                 <div className="flex items-center gap-3">
-                    <span className="text-xs font-mono font-bold text-white/50 w-4">{idx + 1}.</span>
-                    <div className="h-8 w-8 rounded-full bg-white/20 border border-white/30 flex items-center justify-center font-bold text-xs text-white">
-                      {member.userId.displayName.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <span className="font-bold text-white text-sm block">{member.userId.displayName}</span>
-                      <span className="text-[10px] text-white/60 font-medium">{member.streak} Day Streak</span>
-                    </div>
+             {group.members.map((member, idx) => {
+               const isSelf = member.userId._id === user?._id;
+               return (
+               <div key={member.userId._id} className="bg-white/10 border border-white/15 rounded-2xl p-3">
+                 <div className="flex items-center justify-between">
+                   <div className="flex items-center gap-3">
+                      <span className="text-xs font-mono font-bold text-white/50 w-4">{idx + 1}.</span>
+                      <div className="h-8 w-8 rounded-full bg-white/20 border border-white/30 flex items-center justify-center font-bold text-xs text-white">
+                        {member.userId.displayName.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <span className="font-bold text-white text-sm block">{member.userId.displayName}</span>
+                        <span className="text-[10px] text-white/60 font-medium">{member.streak} Day Streak</span>
+                      </div>
+                   </div>
+                   <div className="text-right">
+                     <div className="text-xs font-extrabold text-white">{member.todayCompleted}/{member.totalTasks || totalCount} Completed</div>
+                   </div>
                  </div>
-                 <div className="text-right">
-                   <div className="text-xs font-extrabold text-white">{member.todayCompleted}/{totalCount} Completed</div>
+
+                 <div className="flex items-center gap-2 pt-2.5 mt-2.5 border-t border-white/10">
+                   <button
+                     onClick={() => setSelectedMember(member)}
+                     className="flex-1 bg-white/10 hover:bg-white/20 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-lg border border-white/10 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                   >
+                     <Eye className="w-3.5 h-3.5" /> Inspect Checklist
+                   </button>
+                   {!isSelf && (
+                     <>
+                       <button
+                         onClick={() => handleNudge(member.userId.displayName)}
+                         className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-[11px] py-1.5 px-2.5 rounded-lg border border-amber-500/30 transition-all flex items-center gap-1 cursor-pointer"
+                         title="Nudge friend to complete daily habits"
+                       >
+                         <Zap className="w-3.5 h-3.5" /> Nudge
+                       </button>
+                       <button
+                         onClick={() => handleCheer(member.userId.displayName)}
+                         className="bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 font-bold text-[11px] py-1.5 px-2.5 rounded-lg border border-indigo-500/30 transition-all flex items-center gap-1 cursor-pointer"
+                         title="Send encouragement cheer"
+                       >
+                         <HeartHandshake className="w-3.5 h-3.5" /> Cheer
+                       </button>
+                     </>
+                   )}
                  </div>
                </div>
-             ))}
+             );
+             })}
            </div>
         </div>
       ) : (
@@ -575,6 +617,12 @@ export const Home = () => {
       <MidChallengeInviteModal
         isOpen={isMidChallengeInviteOpen}
         onClose={() => setIsMidChallengeInviteOpen(false)}
+      />
+
+      <FriendInspectModal
+        isOpen={!!selectedMember}
+        onClose={() => setSelectedMember(null)}
+        member={selectedMember}
       />
     </div>
   );

@@ -210,15 +210,6 @@ export const Trio = () => {
           })}
         </div>
 
-        <div className="mt-8 pt-8 border-t border-white/10 text-center">
-           <p className="text-white/50 text-sm mb-4">Invite friends to your group:</p>
-           <div className="inline-block bg-white/5 border border-white/10 rounded-xl px-6 py-3 font-mono text-xl tracking-widest text-white cursor-pointer hover:bg-white/10 transition-colors"
-             onClick={() => navigator.clipboard.writeText(group.joinCode)}
-           >
-             {group.joinCode}
-           </div>
-           <p className="text-white/30 text-xs mt-2">(Click to copy code)</p>
-        </div>
       </div>
 
       <FriendInspectModal 

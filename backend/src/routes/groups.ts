@@ -37,6 +37,10 @@ router.post('/join', protect, async (req: AuthRequest, res: Response) => {
   const userId = req.user?.id;
   const { joinCode } = req.body;
 
+  if (!joinCode || typeof joinCode !== 'string') {
+    return res.status(400).json({ error: 'Please provide a join code' });
+  }
+
   try {
     const group = await Group.findOne({ joinCode: joinCode.toUpperCase() });
 
@@ -45,11 +49,11 @@ router.post('/join', protect, async (req: AuthRequest, res: Response) => {
     }
 
     // Check if already a member
-    if (group.members.some((m: any) => m.userId?.toString() === userId)) {
+    if (group.members.some((m: any) => m.toString() === userId)) {
       return res.status(400).json({ error: 'Already a member of this group' });
     }
 
-    group.members.push({ userId, joinedAt: new Date() } as any);
+    group.members.push(userId as any);
     await group.save();
 
     res.json(group);
@@ -78,46 +82,21 @@ router.get('/my-groups', protect, async (req: AuthRequest, res: Response) => {
   const todayStr = getTodayStr();
 
   try {
-    // Query both Group and ChallengeGroup collections for complete backwards compatibility
-    const [rawGroups, rawChallengeGroups] = await Promise.all([
-      Group.find({ $or: [{ members: userId }, { 'members.userId': userId }] })
-        .populate('members', 'displayName email')
-        .populate('members.userId', 'displayName email')
-        .exec(),
-      ChallengeGroup.find({ $or: [{ members: userId }, { creatorId: userId }] })
-        .populate('members', 'displayName email')
-        .populate('creatorId', 'displayName email')
-        .exec()
-    ]);
+    // ChallengeGroup is the single source of truth for crews (see /challenges/start).
+    // The legacy Group model is only used by the old, currently-unreachable
+    // join-by-code feature and is intentionally not surfaced here anymore - returning
+    // both used to produce two separate entries for what is really one crew.
+    const rawChallengeGroups = await ChallengeGroup.find({ $or: [{ members: userId }, { creatorId: userId }] })
+      .populate('members', 'displayName email')
+      .populate('creatorId', 'displayName email')
+      .exec();
 
-    // Normalize all groups into a unified structure
-    const allGroups = [
-      ...rawGroups.map((g: any) => ({
-        _id: g._id,
-        name: g.name,
-        joinCode: g.joinCode,
-        challengeTemplateId: g.challengeTemplateId,
-        wagerAmount: g.wagerAmount,
-        createdAt: g.createdAt,
-        rawMembers: (g.members || []).map((m: any) => m.userId || m)
-      })),
-      ...rawChallengeGroups.map((cg: any) => ({
-        _id: cg._id,
-        name: cg.name,
-        joinCode: (cg as any).joinCode || '',
-        challengeTemplateId: cg._id,
-        wagerAmount: 0,
-        createdAt: cg.createdAt,
-        rawMembers: (cg.members || []).map((m: any) => m.userId || m)
-      }))
-    ];
-
-    // Deduplicate by group _id string
-    const uniqueGroupsMap = new Map();
-    for (const g of allGroups) {
-      uniqueGroupsMap.set(g._id.toString(), g);
-    }
-    const uniqueGroups = Array.from(uniqueGroupsMap.values());
+    const uniqueGroups = rawChallengeGroups.map((cg: any) => ({
+      _id: cg._id,
+      name: cg.name,
+      createdAt: cg.createdAt,
+      rawMembers: (cg.members || []).map((m: any) => m.userId || m)
+    }));
 
     const enrichedGroups = await Promise.all(uniqueGroups.map(async (group) => {
       const enrichedMembers = await Promise.all(group.rawMembers.map(async (member: any) => {
@@ -195,9 +174,6 @@ router.get('/my-groups', protect, async (req: AuthRequest, res: Response) => {
       return {
         _id: group._id,
         name: group.name,
-        joinCode: group.joinCode,
-        challengeTemplateId: group.challengeTemplateId,
-        wagerAmount: group.wagerAmount,
         members: validMembers
       };
     }));
@@ -223,36 +199,44 @@ router.post('/invite-friends', protect, async (req: AuthRequest, res: Response) 
 
   try {
     const user = await User.findById(userId);
-    let group = await Group.findOne({ members: userId }).sort({ createdAt: -1 });
     const activeCh = await ActiveChallenge.findOne({ userId, status: 'active' });
+    if (!activeCh) {
+      return res.status(400).json({ error: 'No active challenge to invite friends to.' });
+    }
 
-    if (!group && activeCh) {
-      group = await Group.create({
+    let challengeGroup = await ChallengeGroup.findOne({
+      $or: [{ members: userId }, { creatorId: userId }],
+      isActive: true
+    }).sort({ createdAt: -1 });
+    if (!challengeGroup) {
+      challengeGroup = await ChallengeGroup.create({
         name: `${user?.displayName || 'Athlete'}'s Crew`,
-        challengeTemplateId: activeCh._id as any,
-        startDate: activeCh.startDate,
+        creatorId: userId,
         members: [userId as any],
-        wagerPot: 0
+        durationDays: activeCh.durationDays,
+        tasks: activeCh.tasks,
+        startDate: activeCh.startDate,
+        isActive: true
       });
     }
 
-    const groupId = group ? group._id : null;
+    const challengeGroupId = challengeGroup._id;
 
     for (const friendId of friendIds) {
       await Notification.create({
         userId: friendId,
         type: 'group_invite',
-        message: `${user?.displayName || 'A friend'} invited you to join their ${activeCh?.durationDays || 75}-Day Challenge!`,
+        message: `${user?.displayName || 'A friend'} invited you to join their ${activeCh.durationDays || 75}-Day Challenge!`,
         relatedData: {
-          groupId,
-          durationDays: activeCh?.durationDays || 75,
-          tasks: activeCh?.tasks || [],
+          challengeGroupId,
+          durationDays: activeCh.durationDays || 75,
+          tasks: activeCh.tasks || [],
           inviterName: user?.displayName
         }
       });
     }
 
-    res.json({ message: 'Invites sent successfully!', groupId });
+    res.json({ message: 'Invites sent successfully!', challengeGroupId });
   } catch (error: any) {
     console.error('Invite friends error:', error);
     res.status(500).json({ error: error.message || 'Failed to send invites' });

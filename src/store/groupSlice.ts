@@ -17,9 +17,7 @@ export interface GroupMember {
 export interface Group {
   _id: string;
   name: string;
-  joinCode: string;
   members: GroupMember[];
-  wagerAmount: number;
 }
 
 interface GroupState {
@@ -40,7 +38,7 @@ export const fetchMyGroups = createAsyncThunk(
   'group/fetchMyGroups',
   async (_, thunkAPI) => {
     try {
-      return await api.getChallengeGroups();
+      return await api.getMyGroups();
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.message);
     }

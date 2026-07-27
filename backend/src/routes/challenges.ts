@@ -38,15 +38,11 @@ router.post('/start', protect, async (req: AuthRequest, res: Response) => {
     const user = await User.findById(userId);
     const groupName = `${user?.displayName || 'Athlete'}'s Challenge`;
 
-    const groupCreated = await Group.create({
-      name: groupName,
-      challengeTemplateId: challenge._id as any,
-      startDate: new Date(),
-      members: [userId as any],
-      wagerPot: 0
-    });
-
-    await ChallengeGroup.create({
+    // ChallengeGroup is the single source of truth for crews. (A legacy `Group` model
+    // also exists for an old, currently-unreachable join-by-code feature - it is
+    // intentionally not created here anymore, since creating both produced two
+    // separate crew entries for what is really one crew.)
+    const challengeGroupCreated = await ChallengeGroup.create({
       name: groupName,
       creatorId: userId,
       members: [userId as any],
@@ -64,7 +60,7 @@ router.post('/start', protect, async (req: AuthRequest, res: Response) => {
           type: 'group_invite',
           message: `${user?.displayName || 'A friend'} invited you to join a ${durationDays || 75}-day challenge!`,
           relatedData: {
-            groupId: (groupCreated as any)._id,
+            challengeGroupId: (challengeGroupCreated as any)._id,
             durationDays: durationDays || 75,
             tasks,
             inviterName: user?.displayName
@@ -73,7 +69,7 @@ router.post('/start', protect, async (req: AuthRequest, res: Response) => {
       }
     }
 
-    res.status(201).json({ challenge, group: groupCreated });
+    res.status(201).json({ challenge, group: challengeGroupCreated });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error starting challenge' });
@@ -90,6 +86,37 @@ router.get('/active', protect, async (req: AuthRequest, res: Response) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error fetching challenge' });
+  }
+});
+
+// @route   PUT /api/challenges/active/tasks
+// @desc    Update the task list for the user's active challenge (Customize Tasks)
+router.put('/active/tasks', protect, async (req: AuthRequest, res: Response) => {
+  const userId = req.user?.id;
+  const { tasks } = req.body;
+
+  if (!Array.isArray(tasks) || tasks.length === 0) {
+    return res.status(400).json({ error: 'Please provide at least one task' });
+  }
+  for (const t of tasks) {
+    if (!t || typeof t.id !== 'string' || typeof t.title !== 'string' || !t.title.trim()) {
+      return res.status(400).json({ error: 'Each task needs an id and a non-empty title' });
+    }
+  }
+
+  try {
+    const challenge = await ActiveChallenge.findOneAndUpdate(
+      { userId, status: 'active' },
+      { tasks },
+      { new: true }
+    );
+    if (!challenge) {
+      return res.status(404).json({ error: 'No active challenge found' });
+    }
+    res.json(challenge);
+  } catch (error) {
+    console.error('Error updating tasks:', error);
+    res.status(500).json({ error: 'Server error updating tasks' });
   }
 });
 
@@ -152,9 +179,22 @@ router.post('/cancel', protect, async (req: AuthRequest, res: Response) => {
       { new: true }
     );
 
-    // Deactivate associated groups so old crews aren't reused
-    await Group.updateMany({ members: userId }, { isActive: false });
-    await ChallengeGroup.updateMany({ $or: [{ members: userId }, { creatorId: userId }] }, { isActive: false });
+    // Remove the cancelling user from any crews they're part of, so their old crew
+    // isn't reused for their next challenge. Only deactivate a crew entirely once it
+    // has no members left - other members still mid-challenge should keep their crew.
+    const userGroups = await Group.find({ members: userId });
+    for (const g of userGroups) {
+      g.members = g.members.filter((m: any) => m.toString() !== userId) as any;
+      if (g.members.length === 0) g.isActive = false;
+      await g.save();
+    }
+
+    const userChallengeGroups = await ChallengeGroup.find({ $or: [{ members: userId }, { creatorId: userId }] });
+    for (const cg of userChallengeGroups) {
+      cg.members = cg.members.filter((m: any) => m.toString() !== userId) as any;
+      if (cg.members.length === 0) cg.isActive = false;
+      await cg.save();
+    }
 
     // Clear today's log so completed tasks from cancelled challenge don't bleed into next challenge
     await DailyLog.findOneAndDelete({ userId, date: todayStr });
@@ -176,67 +216,6 @@ router.get('/all', protect, async (req: AuthRequest, res: Response) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error fetching all challenges' });
-  }
-});
-
-// @route   GET /api/challenges/groups
-// @desc    Get all active challenge groups the user is part of
-router.get('/groups', protect, async (req: AuthRequest, res: Response) => {
-  const userId = req.user?.id;
-  try {
-    const groups = await ChallengeGroup.find({ members: userId, isActive: true })
-      .populate('members', 'displayName email')
-      .exec();
-
-    // Attach current streak/todayCompleted for each member
-    // Since ActiveChallenge calculates streak, we fetch active challenges for these members
-    const enrichedGroups = await Promise.all(groups.map(async (group) => {
-      const enrichedMembers = await Promise.all(group.members.map(async (member: any) => {
-        const activeChallenge = await ActiveChallenge.findOne({ userId: member._id, status: 'active' });
-        
-        let streak = 0;
-        let todayCompleted = 0;
-
-        if (activeChallenge) {
-          // Calculate streak (simplified based on log dates)
-          const logs = await import('../models/DailyLog').then(m => m.default.find({ userId: member._id, activeChallengeId: activeChallenge._id }).sort({ date: -1 }));
-          
-          const todayStr = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0') + '-' + String(new Date().getDate()).padStart(2, '0');
-          
-          let currentStreak = 0;
-          for (let i = 0; i < logs.length; i++) {
-             if (logs[i].completedTaskIds.length === (activeChallenge.tasks as any).length) {
-                currentStreak++;
-             } else {
-                if (logs[i].date === todayStr) continue;
-                break;
-             }
-          }
-          streak = currentStreak;
-          
-          const todayLog = logs.find(l => l.date === todayStr);
-          todayCompleted = todayLog ? todayLog.completedTaskIds.length : 0;
-        }
-
-        return {
-          userId: member,
-          streak,
-          todayCompleted
-        };
-      }));
-
-      return {
-        _id: group._id,
-        name: group.name,
-        durationDays: group.durationDays,
-        members: enrichedMembers
-      };
-    }));
-
-    res.json(enrichedGroups);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error fetching groups' });
   }
 });
 

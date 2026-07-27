@@ -69,12 +69,16 @@ router.post('/:id/respond', protect, async (req: AuthRequest, res: Response) => 
         status: 'active'
       });
 
-      // Add user to Group and ChallengeGroup upon explicit acceptance
+      // Add user to Group and ChallengeGroup upon explicit acceptance.
+      // These are two separate documents in two separate collections with their own
+      // independent _ids - each must be looked up by its own id, not each other's.
       if (notification.relatedData?.groupId) {
         await Group.findByIdAndUpdate(notification.relatedData.groupId, {
           $addToSet: { members: userId }
         });
-        await ChallengeGroup.findByIdAndUpdate(notification.relatedData.groupId, {
+      }
+      if (notification.relatedData?.challengeGroupId) {
+        await ChallengeGroup.findByIdAndUpdate(notification.relatedData.challengeGroupId, {
           $addToSet: { members: userId }
         });
       }
