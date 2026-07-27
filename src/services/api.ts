@@ -144,6 +144,13 @@ export const api = {
   getMyGroups: async () => {
     return safeFetch(`${API_URL}/groups/my-groups`, { headers: getHeaders() });
   },
+  inviteFriendsToGroup: async (friendIds: string[]) => {
+    return safeFetch(`${API_URL}/groups/invite-friends`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ friendIds })
+    });
+  },
   getChallengeGroups: async () => {
     return safeFetch(`${API_URL}/challenges/groups`, { headers: getHeaders() });
   },

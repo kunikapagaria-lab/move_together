@@ -147,4 +147,54 @@ router.get('/my-groups', protect, async (req: AuthRequest, res: Response) => {
   }
 });
 
+import Notification from '../models/Notification';
+
+// @route   POST /api/groups/invite-friends
+// @desc    Invite friends to active challenge group anytime
+router.post('/invite-friends', protect, async (req: AuthRequest, res: Response) => {
+  const userId = req.user?.id;
+  const { friendIds } = req.body;
+
+  if (!friendIds || !Array.isArray(friendIds) || friendIds.length === 0) {
+    return res.status(400).json({ error: 'Please select at least one friend to invite.' });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    let group = await Group.findOne({ 'members.userId': userId }).sort({ createdAt: -1 });
+    const activeCh = await ActiveChallenge.findOne({ userId, status: 'active' });
+
+    if (!group && activeCh) {
+      group = await Group.create({
+        name: `${user?.displayName || 'Athlete'}'s Crew`,
+        challengeTemplateId: activeCh._id as any,
+        startDate: activeCh.startDate,
+        members: [{ userId: userId as any, joinedAt: new Date() }] as any,
+        wagerPot: 0
+      });
+    }
+
+    const groupId = group ? group._id : null;
+
+    for (const friendId of friendIds) {
+      await Notification.create({
+        userId: friendId,
+        type: 'group_invite',
+        message: `${user?.displayName || 'A friend'} invited you to join their ${activeCh?.durationDays || 75}-Day Challenge!`,
+        relatedData: {
+          groupId,
+          durationDays: activeCh?.durationDays || 75,
+          tasks: activeCh?.tasks || [],
+          inviterName: user?.displayName
+        }
+      });
+    }
+
+    res.json({ message: 'Invites sent successfully!', groupId });
+  } catch (error: any) {
+    console.error('Invite friends error:', error);
+    res.status(500).json({ error: error.message || 'Failed to send invites' });
+  }
+});
+
 export default router;

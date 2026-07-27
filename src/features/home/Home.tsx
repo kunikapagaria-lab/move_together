@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Sparkles, Plus, Trash2, XCircle, ArrowLeft, Trophy, ShieldCheck } from 'lucide-react';
+import { Users, Sparkles, Plus, Trash2, XCircle, ArrowLeft, ShieldCheck, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../store';
@@ -13,6 +13,8 @@ import { getAthleteRank } from '../../utils/athleteRanks';
 import { WearableSyncModal } from '../integrations/WearableSyncModal';
 import { AthleteRanksModal } from '../ranks/AthleteRanksModal';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
+import { useToast } from '../../components/ui/Toast';
+import { MidChallengeInviteModal } from '../../components/ui/MidChallengeInviteModal';
 
 const QUOTES = [
   "Discipline is choosing between what you want now and what you want most.",
@@ -34,8 +36,6 @@ const defaultTasks = [
   { id: 't8', title: 'Progress Photo', iconName: 'Camera', color: 'bg-yellow-400' }
 ];
 
-import { useToast } from '../../components/ui/Toast';
-
 export const Home = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
@@ -53,10 +53,11 @@ export const Home = () => {
   const [invitedFriendIds, setInvitedFriendIds] = useState<string[]>([]);
   const [selectedPresetId, setSelectedPresetId] = useState<string>('grit-75');
 
-  // Sync, Rank & Cancel Modal State
+  // Sync, Rank, Cancel & Invite Modal State
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [isRankModalOpen, setIsRankModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isMidChallengeInviteOpen, setIsMidChallengeInviteOpen] = useState(false);
 
   const rank = getAthleteRank(streak);
 
@@ -319,9 +320,6 @@ export const Home = () => {
   
   // Group logic for widget
   const group = myGroups[0];
-  const groupAvgStreak = group && group.members.length > 0 
-    ? Math.round(group.members.reduce((acc, m) => acc + m.streak, 0) / group.members.length) 
-    : 0;
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 md:px-8 flex flex-col items-center pt-8 h-full overflow-y-auto scrollbar-none pb-12 text-center">
@@ -468,49 +466,75 @@ export const Home = () => {
         </div>
       </div>
 
-      {/* Athletic Crew Leaderboard */}
-      {group ? (
-        <div className="w-full bg-black/40 backdrop-blur-xl border border-white/10 shadow-xl rounded-2xl p-5 text-left mb-8 relative overflow-hidden cursor-pointer hover:border-indigo-500/30 transition-all" onClick={() => navigate('/friends')}>
-           <div className="absolute top-0 right-0 p-4 opacity-10">
-              <Users className="w-32 h-32" />
-           </div>
-           <div className="relative z-10 flex justify-between items-center mb-4">
+      {/* Athletic Crew Leaderboard / Invite Friends Banner */}
+      {group && group.members.length > 1 ? (
+        <div className="w-full bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-5 text-left mb-8 relative overflow-hidden transition-all shadow-xl">
+           <div className="flex justify-between items-center mb-4">
              <div>
-               <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block mb-0.5">Athletic Crew Leaderboard</span>
+               <span className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border border-white/30 bg-white/10 text-white uppercase tracking-wider mb-1 inline-block">
+                 Athletic Crew Leaderboard
+               </span>
                <h3 className="font-extrabold text-white text-lg flex items-center gap-2">
-                 <ShieldCheck className="h-5 w-5 text-indigo-400" /> {group.name}
+                 <ShieldCheck className="h-5 w-5 text-amber-400" /> {group.name}
                </h3>
              </div>
-             <span className="text-xs font-bold text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20 flex items-center gap-1">
-               <Trophy className="w-3 h-3 text-amber-400" /> {groupAvgStreak} Day Crew Avg
-             </span>
+             <button 
+               onClick={() => setIsMidChallengeInviteOpen(true)}
+               className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white font-bold text-xs px-3 py-1.5 rounded-xl shadow-sm transition-all cursor-pointer"
+             >
+               <UserPlus className="w-3.5 h-3.5" /> + Invite More
+             </button>
            </div>
            
-           <div className="relative z-10 space-y-2.5">
+           <div className="space-y-2.5">
              {group.members.map((member, idx) => (
-               <div key={member.userId._id} className="flex items-center justify-between bg-white/5 border border-white/5 rounded-xl p-3">
+               <div key={member.userId._id} className="flex items-center justify-between bg-white/10 border border-white/15 rounded-2xl p-3">
                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-mono font-bold text-white/40 w-4">{idx + 1}.</span>
-                    <div className="h-8 w-8 rounded-full bg-indigo-500/30 border border-indigo-500/40 flex items-center justify-center font-bold text-xs text-white">
+                    <span className="text-xs font-mono font-bold text-white/50 w-4">{idx + 1}.</span>
+                    <div className="h-8 w-8 rounded-full bg-white/20 border border-white/30 flex items-center justify-center font-bold text-xs text-white">
                       {member.userId.displayName.charAt(0).toUpperCase()}
                     </div>
                     <div>
                       <span className="font-bold text-white text-sm block">{member.userId.displayName}</span>
-                      <span className="text-[10px] text-white/40">{member.streak} Day Streak</span>
+                      <span className="text-[10px] text-white/60 font-medium">{member.streak} Day Streak</span>
                     </div>
                  </div>
                  <div className="text-right">
-                   <div className="text-sm font-bold text-emerald-400">{member.todayCompleted}/{totalCount} Completed</div>
+                   <div className="text-xs font-extrabold text-white">{member.todayCompleted}/{totalCount} Completed</div>
                  </div>
                </div>
              ))}
            </div>
         </div>
       ) : (
-        <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-center mb-8 cursor-pointer hover:bg-white/10 transition-colors" onClick={() => navigate('/friends')}>
-          <Users className="h-8 w-8 text-white/30 mx-auto mb-2" />
-          <h3 className="font-bold text-white">Form an Athletic Crew</h3>
-          <p className="text-sm text-white/50">Invite friends to share challenges and hold each other accountable on leaderboards.</p>
+        <div 
+          onClick={() => setIsMidChallengeInviteOpen(true)}
+          className="w-full bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 text-left mb-8 relative overflow-hidden cursor-pointer group transition-all shadow-xl hover:bg-white/[0.15]"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/15 border border-white/20 rounded-2xl flex items-center justify-center text-2xl shadow-inner shrink-0">
+                👥
+              </div>
+              <div>
+                <span className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border border-white/30 bg-white/10 text-white uppercase tracking-wider mb-1 inline-block">
+                  Solo Challenge Mode
+                </span>
+                <h3 className="font-extrabold text-white text-lg tracking-tight">
+                  Invite Friends to Join Your Challenge
+                </h3>
+                <p className="text-xs text-white/70">
+                  Flying solo? Send an invite to your friends anytime to compete on a shared crew leaderboard!
+                </p>
+              </div>
+            </div>
+
+            <button 
+              className="self-start sm:self-center flex items-center gap-2 bg-white hover:bg-white/90 text-black font-extrabold text-xs px-4 py-2.5 rounded-2xl shadow-lg transition-all shrink-0 cursor-pointer"
+            >
+              <UserPlus className="w-4 h-4" /> Invite Friends 🏃
+            </button>
+          </div>
         </div>
       )}
 
@@ -542,6 +566,11 @@ export const Home = () => {
         confirmText="Cancel Challenge"
         cancelText="Keep Going"
         type="danger"
+      />
+
+      <MidChallengeInviteModal
+        isOpen={isMidChallengeInviteOpen}
+        onClose={() => setIsMidChallengeInviteOpen(false)}
       />
     </div>
   );
