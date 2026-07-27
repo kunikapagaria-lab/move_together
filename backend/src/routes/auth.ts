@@ -115,4 +115,21 @@ router.post('/login', async (req, res) => {
   }
 });
 
+import mongoose from 'mongoose';
+
+// @route   POST /api/auth/clear-all-data
+// @desc    Wipe all collections in database for a 100% clean slate
+router.post('/clear-all-data', async (req, res) => {
+  try {
+    const collections = mongoose.connection.collections;
+    for (const key in collections) {
+      await collections[key].deleteMany({});
+    }
+    res.json({ message: 'Database cleared 100% clean! All users and data purged.' });
+  } catch (error: any) {
+    console.error('Clear DB error:', error);
+    res.status(500).json({ error: error.message || 'Failed to clear database' });
+  }
+});
+
 export default router;

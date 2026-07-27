@@ -23,6 +23,10 @@ router.post('/start', protect, async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'You already have an active challenge.' });
     }
 
+    // Clear any existing DailyLog for today so new challenge starts at 0%
+    const todayStr = getTodayStr();
+    await DailyLog.findOneAndDelete({ userId, date: todayStr });
+
     const challenge = await ActiveChallenge.create({
       userId,
       durationDays: durationDays || 75,
@@ -131,16 +135,33 @@ router.post('/freeze-today', protect, async (req: AuthRequest, res: Response) =>
   }
 });
 
+import DailyLog from '../models/DailyLog';
+
+const getTodayStr = () => {
+  const today = new Date();
+  return today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+};
+
 // @route   POST /api/challenges/cancel
 // @desc    Cancel current active challenge
 router.post('/cancel', protect, async (req: AuthRequest, res: Response) => {
   const userId = req.user?.id;
+  const todayStr = getTodayStr();
+
   try {
     const challenge = await ActiveChallenge.findOneAndUpdate(
       { userId, status: 'active' },
       { status: 'cancelled' },
       { new: true }
     );
+
+    // Deactivate associated groups so old crews aren't reused
+    await Group.updateMany({ members: userId }, { isActive: false });
+    await ChallengeGroup.updateMany({ $or: [{ members: userId }, { creatorId: userId }] }, { isActive: false });
+
+    // Clear today's log so completed tasks from cancelled challenge don't bleed into next challenge
+    await DailyLog.findOneAndDelete({ userId, date: todayStr });
+
     res.json(challenge);
   } catch (error) {
     console.error(error);

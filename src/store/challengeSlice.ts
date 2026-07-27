@@ -176,12 +176,14 @@ export const challengeSlice = createSlice({
         state.todayLog = action.payload;
       })
       .addCase(startChallenge.fulfilled, (state, action) => {
+        localStorage.removeItem('move_together_active_challenge');
         state.activeChallenge = action.payload.challenge;
-        state.todayLog = action.payload.log;
-        state.streak = action.payload.streak;
-        state.history = action.payload.history;
+        state.todayLog = null;
+        state.streak = 0;
+        state.history = action.payload.history || [];
       })
       .addCase(cancelChallenge.fulfilled, (state) => {
+        localStorage.removeItem('move_together_active_challenge');
         state.activeChallenge = null;
         state.todayLog = null;
         state.history = [];
