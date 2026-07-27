@@ -4,6 +4,7 @@ import { Plus, Trash2, X, Sparkles, Dumbbell, Activity, Utensils, Apple, BookOpe
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '../../store';
 import { fetchChallengeData } from '../../store/challengeSlice';
+import { api } from '../../services/api';
 import { useToast } from '../../components/ui/Toast';
 
 const PRESET_ICONS = [
@@ -25,8 +26,9 @@ export const CustomizeTasksModal = ({
   onClose: () => void;
 }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { showSuccess } = useToast();
+  const { showSuccess, showError } = useToast();
   const { activeChallenge } = useSelector((state: RootState) => state.challenge);
+  const [isSaving, setIsSaving] = useState(false);
 
   const initialTasks = activeChallenge?.tasks && activeChallenge.tasks.length > 0
     ? activeChallenge.tasks
@@ -68,17 +70,18 @@ export const CustomizeTasksModal = ({
     setNewTitle('');
   };
 
-  const handleSaveAll = () => {
-    if (activeChallenge) {
-      const updatedChallenge = {
-        ...activeChallenge,
-        tasks: taskList
-      };
-      localStorage.setItem('move_together_active_challenge', JSON.stringify(updatedChallenge));
-      dispatch(fetchChallengeData());
+  const handleSaveAll = async () => {
+    setIsSaving(true);
+    try {
+      await api.updateChallengeTasks(taskList);
+      await dispatch(fetchChallengeData());
+      showSuccess('Personalized habit checklist saved!');
+      onClose();
+    } catch (err: any) {
+      showError(err?.message || 'Failed to save your checklist. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
-    showSuccess('Personalized habit checklist saved!');
-    onClose();
   };
 
   const modalContent = (
@@ -190,9 +193,10 @@ export const CustomizeTasksModal = ({
           <button
             type="button"
             onClick={handleSaveAll}
-            className="flex-1 bg-white hover:bg-white/90 text-black font-extrabold uppercase tracking-wider text-xs py-3.5 rounded-2xl shadow-xl transition-all cursor-pointer"
+            disabled={isSaving}
+            className="flex-1 bg-white hover:bg-white/90 text-black font-extrabold uppercase tracking-wider text-xs py-3.5 rounded-2xl shadow-xl transition-all cursor-pointer disabled:opacity-50"
           >
-            Save Personal Tasks
+            {isSaving ? 'Saving...' : 'Save Personal Tasks'}
           </button>
         </div>
       </div>

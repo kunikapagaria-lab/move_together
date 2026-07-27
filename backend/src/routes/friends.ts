@@ -36,7 +36,19 @@ router.post('/request', protect, async (req: AuthRequest, res: Response) => {
   const requesterId = req.user?.id;
   const { recipientId } = req.body;
 
+  if (!recipientId) {
+    return res.status(400).json({ error: 'recipientId is required' });
+  }
+  if (recipientId === requesterId) {
+    return res.status(400).json({ error: 'You cannot send a friend request to yourself' });
+  }
+
   try {
+    const recipientExists = await User.exists({ _id: recipientId });
+    if (!recipientExists) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
     // Check if friendship already exists
     const existing = await Friendship.findOne({
       $or: [
@@ -72,7 +84,7 @@ router.put('/accept/:id', protect, async (req: AuthRequest, res: Response) => {
       { _id: req.params.id, recipient: req.user?.id, status: 'pending' },
       { status: 'accepted' },
       { new: true }
-    );
+    ).populate('requester recipient', 'displayName email _id');
     if (!request) return res.status(404).json({ error: 'Request not found' });
     res.json(request);
   } catch (error) {
@@ -89,7 +101,7 @@ router.put('/reject/:id', protect, async (req: AuthRequest, res: Response) => {
       { _id: req.params.id, recipient: req.user?.id, status: 'pending' },
       { status: 'rejected' },
       { new: true }
-    );
+    ).populate('requester recipient', 'displayName email _id');
     if (!request) return res.status(404).json({ error: 'Request not found' });
     res.json(request);
   } catch (error) {

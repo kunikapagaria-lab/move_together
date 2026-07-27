@@ -52,13 +52,6 @@ export const api = {
       body: JSON.stringify({ currentPassword, newPassword })
     });
   },
-  updateAvatar: async (avatarUrl: string) => {
-    return safeFetch(`${API_URL}/auth/update-avatar`, {
-      method: 'PUT',
-      headers: getHeaders(),
-      body: JSON.stringify({ avatarUrl })
-    });
-  },
 
   // --- Challenges ---
   getActiveChallenge: async () => {
@@ -85,6 +78,13 @@ export const api = {
   },
   getAllChallenges: async () => {
     return safeFetch(`${API_URL}/challenges/all`, { headers: getHeaders() });
+  },
+  updateChallengeTasks: async (tasks: any[]) => {
+    return safeFetch(`${API_URL}/challenges/active/tasks`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ tasks })
+    });
   },
 
   // --- Logs ---
@@ -151,20 +151,10 @@ export const api = {
       body: JSON.stringify({ friendIds })
     });
   },
-  getChallengeGroups: async () => {
-    return safeFetch(`${API_URL}/challenges/groups`, { headers: getHeaders() });
-  },
 
   // --- Friends ---
   searchUsers: async (query: string) => {
     return safeFetch(`${API_URL}/friends/search?q=${encodeURIComponent(query)}`, { headers: getHeaders() });
-  },
-  respondToFriendRequest: async (requestId: string, action: 'accept' | 'reject') => {
-    return safeFetch(`${API_URL}/friends/requests/${requestId}`, {
-      method: 'PUT',
-      headers: getHeaders(),
-      body: JSON.stringify({ action })
-    });
   },
 
   // --- Notifications ---
