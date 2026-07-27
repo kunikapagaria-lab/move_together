@@ -10,7 +10,6 @@ export const PhotoUpload = ({ onComplete, isTaskCompleted: _isTaskCompleted }: P
   const [photoUrl, setPhotoUrl] = useState<string | null>(() => {
     return localStorage.getItem('today_progress_photo') || null;
   });
-  const [visibility, setVisibility] = useState<'private' | 'group'>('private');
   const [isLiveCameraOpen, setIsLiveCameraOpen] = useState(false);
 
   const galleryInputRef = useRef<HTMLInputElement>(null);
@@ -177,7 +176,7 @@ export const PhotoUpload = ({ onComplete, isTaskCompleted: _isTaskCompleted }: P
           <img src={photoUrl} alt="Progress" className="w-full h-56 object-cover transition-transform group-hover:scale-105" />
           
           <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full border border-white/20">
-            {visibility === 'private' ? '🔒 Private' : '👥 Shared with Crew'}
+            🔒 Saved on this device
           </div>
 
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-4">
@@ -245,21 +244,9 @@ export const PhotoUpload = ({ onComplete, isTaskCompleted: _isTaskCompleted }: P
         </div>
       )}
 
-      <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/10">
-        <div>
-          <p className="text-xs font-bold text-white flex items-center gap-1.5">
-            <Eye className="w-3.5 h-3.5 text-indigo-400" /> Photo Privacy
-          </p>
-          <p className="text-[10px] text-white/40">Choose who can view this photo</p>
-        </div>
-        <select 
-          value={visibility}
-          onChange={(e) => setVisibility(e.target.value as 'private' | 'group')}
-          className="bg-black/40 border border-white/20 text-xs font-bold text-white rounded-lg px-3 py-1.5 outline-none focus:border-indigo-400 transition-all cursor-pointer"
-        >
-          <option value="private" className="bg-[#14121f]">Private (Only Me)</option>
-          <option value="group" className="bg-[#14121f]">Shared with Crew</option>
-        </select>
+      <div className="flex items-center gap-2 p-3 rounded-xl bg-white/[0.03] border border-white/10">
+        <Eye className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+        <p className="text-[10px] text-white/40">This photo is only stored in your browser on this device — it isn't uploaded or shared with anyone.</p>
       </div>
     </div>
   );

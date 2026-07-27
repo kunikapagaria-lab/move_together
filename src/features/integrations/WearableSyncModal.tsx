@@ -28,7 +28,7 @@ export const WearableSyncModal = ({ isOpen, onClose }: WearableSyncModalProps) =
   const { showError, showSuccess } = useToast();
 
   const [syncingId, setSyncingId] = useState<string | null>(null);
-  const [syncedResult, setSyncedResult] = useState<{ appName: string; details: string; taskTitle: string } | null>(null);
+  const [syncedResult, setSyncedResult] = useState<{ appName: string; details: string; taskTitle: string; simulated: boolean } | null>(null);
 
   if (!isOpen) return null;
 
@@ -44,11 +44,12 @@ export const WearableSyncModal = ({ isOpen, onClose }: WearableSyncModalProps) =
       await dispatch(fetchChallengeData()).unwrap();
 
       setSyncingId(null);
-      showSuccess(`Successfully synced from ${app.name}!`);
+      showSuccess(response.simulated ? 'Logged a simulated workout entry!' : `Logged workout from ${app.name}!`);
       setSyncedResult({
         appName: app.name,
         details: `${response.telemetry.distanceKm} km Outdoor ${response.telemetry.workoutName} (${response.telemetry.calories} kcal | ${response.telemetry.steps} steps)`,
-        taskTitle: response.syncedTaskTitle
+        taskTitle: response.syncedTaskTitle,
+        simulated: !!response.simulated
       });
     } catch (err: any) {
       setSyncingId(null);
@@ -83,7 +84,7 @@ export const WearableSyncModal = ({ isOpen, onClose }: WearableSyncModalProps) =
             </div>
             <div>
               <h2 className="text-xl font-bold text-white tracking-tight">Fitness Wearable & App Sync</h2>
-              <p className="text-xs text-white/50">Mock integration pipeline to auto-sync activities</p>
+              <p className="text-xs text-white/50">Demo mode — no wearable account is actually connected yet</p>
             </div>
           </div>
 
@@ -128,7 +129,9 @@ export const WearableSyncModal = ({ isOpen, onClose }: WearableSyncModalProps) =
             >
               <CheckCircle2 className="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" />
               <div>
-                <p className="text-xs font-bold text-emerald-300">Successfully Synced from {syncedResult.appName}!</p>
+                <p className="text-xs font-bold text-emerald-300">
+                  {syncedResult.simulated ? 'Simulated Entry Logged' : `Logged from ${syncedResult.appName}`}
+                </p>
                 <p className="text-xs text-white/80 font-mono mt-1">{syncedResult.details}</p>
                 <p className="text-[10px] text-white/50 mt-1">Auto-completed task: <span className="text-emerald-400 font-bold">"{syncedResult.taskTitle}"</span></p>
               </div>
@@ -137,7 +140,7 @@ export const WearableSyncModal = ({ isOpen, onClose }: WearableSyncModalProps) =
 
           <div className="mt-6 pt-4 border-t border-white/5 text-center">
             <span className="text-[10px] text-indigo-300/80 tracking-widest uppercase font-bold flex items-center justify-center gap-1">
-              <Sparkles className="w-3 h-3 text-indigo-400" /> Active Production Webhook Route: POST /api/integrations/sync
+              <Sparkles className="w-3 h-3 text-indigo-400" /> No real wearable account is connected — this creates a manual log entry
             </span>
           </div>
         </motion.div>

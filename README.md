@@ -1,32 +1,59 @@
-# React + TypeScript + Vite
+# Move Together
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A 75-day habit challenge tracker with crews, streaks, and friend accountability.
+React + Vite frontend, Express + MongoDB backend.
 
-Currently, two official plugins are available:
+## Project layout
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- `src/` — React frontend (Vite, Redux Toolkit, Tailwind)
+- `backend/` — Express + Mongoose API, run standalone for local development
+- `api/index.ts` — the same API mounted as a Vercel serverless function for production
 
-## React Compiler
+## Prerequisites
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Node.js 18+
+- A MongoDB connection string (e.g. a free MongoDB Atlas cluster)
 
-## Expanding the Oxlint configuration
+## Local setup
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+1. Install frontend dependencies (project root):
+   ```
+   npm install
+   ```
+2. Install backend dependencies:
+   ```
+   cd backend && npm install
+   ```
+3. Create `backend/.env` (gitignored — never commit this file):
+   ```
+   PORT=5000
+   MONGODB_URI="your-mongodb-connection-string"
+   JWT_SECRET="a long random string, e.g. `openssl rand -hex 32`"
+   CLIENT_URL="http://localhost:5173"
+   ```
+4. Run the backend:
+   ```
+   cd backend && npm run dev
+   ```
+5. In a separate terminal, run the frontend:
+   ```
+   npm run dev
+   ```
+   The frontend proxies `/api` calls to `VITE_API_URL` if set, otherwise defaults to same-origin `/api`. For local dev against the standalone backend, set `VITE_API_URL=http://localhost:5000/api` in a root `.env.local`.
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+## Deployment (Vercel)
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+The frontend is built by Vite; `/api/*` requests are routed to the serverless function at `api/index.ts` (see `vercel.json`). Set these environment variables in the Vercel project settings:
+
+- `MONGODB_URI`
+- `JWT_SECRET`
+- `CLIENT_URL` (your production domain, optional — `*.vercel.app` and `localhost` are always allowed)
+
+**Never commit real credentials to source.** Both `MONGODB_URI` and `JWT_SECRET` must come from the environment — the server refuses to start (or connect) without them.
+
+## Known limitations
+
+- Wearable sync (`/api/integrations/sync`) is a manual/simulated entry — there's no real OAuth connection to Strava, Apple Health, Google Fit, etc. yet.
+- Progress photos are stored only in the browser's `localStorage` on the device that took them; they are not uploaded or synced anywhere.
+- The scheduled "did you miss a day" challenge-failure check (`backend/src/cron/midnightReset.ts`) only runs inside the long-lived `backend/src/server.ts` process. It does **not** run in the Vercel serverless deployment (`api/index.ts`), since serverless functions don't stay alive to run a cron schedule. To make this work in production, wire it up to [Vercel Cron Jobs](https://vercel.com/docs/cron-jobs) (or another external scheduler) calling a dedicated, protected endpoint.
+- There is no automated test suite yet.

@@ -11,7 +11,10 @@ const getTodayStr = () => {
 };
 
 // @route   POST /api/integrations/sync
-// @desc    Sync workout telemetry from wearable/fitness app source
+// @desc    Log a manually-entered workout as a "simulated" wearable sync.
+//          There is no real OAuth connection to Strava/Apple Health/etc. yet -
+//          this only records whatever distance/calories the client provides
+//          (or a clearly-labeled placeholder if it provides none).
 router.post('/sync', protect, async (req: AuthRequest, res: Response) => {
   const userId = req.user?.id;
   const { provider, distanceKm, calories, workoutName } = req.body;
@@ -54,9 +57,12 @@ router.post('/sync', protect, async (req: AuthRequest, res: Response) => {
       todayLog.completedTaskIds.push(physicalTask.id);
     }
 
-    // Store health telemetry
-    const syncedDistance = distanceKm || Number((Math.random() * 3 + 3).toFixed(1));
-    const syncedCalories = calories || Math.floor(Math.random() * 200 + 350);
+    // No real wearable OAuth is connected, so we only use numbers the client actually
+    // provided. If it didn't provide any, we log a fixed placeholder rather than a
+    // randomly-generated number that could look like a real reading.
+    const isSimulated = distanceKm == null && calories == null;
+    const syncedDistance = distanceKm ?? 5;
+    const syncedCalories = calories ?? 400;
 
     todayLog.healthData = {
       steps: Math.floor(syncedDistance * 1320),
@@ -67,9 +73,12 @@ router.post('/sync', protect, async (req: AuthRequest, res: Response) => {
     await todayLog.save();
 
     res.json({
-      message: `Synced ${syncedDistance} km workout from ${provider || 'Fitness App'}!`,
+      message: isSimulated
+        ? `Logged a simulated workout entry (no ${provider || 'wearable'} account connected yet).`
+        : `Logged ${syncedDistance} km workout from ${provider || 'Fitness App'}.`,
       log: todayLog,
       syncedTaskTitle: physicalTask ? physicalTask.title : 'Workout',
+      simulated: isSimulated,
       telemetry: {
         provider: provider || 'Fitness Provider',
         workoutName: workoutName || 'Outdoor Activity',
