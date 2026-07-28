@@ -71,26 +71,31 @@ const routineSlice = createSlice({
   name: 'routine',
   initialState,
   reducers: {
-    setCell: (state, action: PayloadAction<{ day: TimetableCell['day']; timeRow: string; title: string; subtitle?: string }>) => {
-      const { day, timeRow, title, subtitle } = action.payload;
-      
-      // If title is empty, delete cell
-      if (!title.trim()) {
-        state.cells = state.cells.filter(c => !(c.day === day && c.timeRow === timeRow));
-      } else {
-        const existingIdx = state.cells.findIndex(c => c.day === day && c.timeRow === timeRow);
-        if (existingIdx !== -1) {
-          state.cells[existingIdx].title = title;
-          state.cells[existingIdx].subtitle = subtitle || `${timeRow.toLowerCase()} slot`;
+    setCell: (state, action: PayloadAction<{ cellId?: string; day: TimetableCell['day']; timeRow: string; title: string; subtitle?: string }>) => {
+      const { cellId, day, timeRow, title, subtitle } = action.payload;
+
+      if (cellId) {
+        // Editing one specific, already-known cell in place.
+        if (!title.trim()) {
+          state.cells = state.cells.filter(c => c.id !== cellId);
         } else {
-          state.cells.push({
-            id: 'c_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-            day,
-            timeRow,
-            title,
-            subtitle: subtitle || `${timeRow.toLowerCase()} slot`
-          });
+          const existing = state.cells.find(c => c.id === cellId);
+          if (existing) {
+            existing.title = title;
+            existing.subtitle = subtitle || `${timeRow.toLowerCase()} slot`;
+          }
         }
+      } else if (title.trim()) {
+        // Adding a brand new task - always create a new card rather than upserting
+        // by (day, timeRow), which used to silently overwrite another card that
+        // happened to share the same (often generic "Custom") time-row label.
+        state.cells.push({
+          id: 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+          day,
+          timeRow,
+          title,
+          subtitle: subtitle || `${timeRow.toLowerCase()} slot`
+        });
       }
       localStorage.setItem('movetribe_timetable_cells', JSON.stringify(state.cells));
     },
@@ -99,8 +104,11 @@ const routineSlice = createSlice({
       const { cellId, targetDay, targetTimeRow } = action.payload;
       const cell = state.cells.find(c => c.id === cellId);
       if (cell) {
-        // Remove any existing cell at target
-        state.cells = state.cells.filter(c => !(c.day === targetDay && c.timeRow === targetTimeRow));
+        // Just move it onto the target day - don't evict whatever else is already
+        // there. `timeRow` isn't shown in the UI at all; it used to double as a
+        // "slot" key that silently deleted any existing card sharing the same
+        // (day, timeRow) pair, which is why dropping a card onto a day with
+        // existing cards was replacing them instead of just adding to the list.
         cell.day = targetDay;
         cell.timeRow = targetTimeRow;
         localStorage.setItem('movetribe_timetable_cells', JSON.stringify(state.cells));

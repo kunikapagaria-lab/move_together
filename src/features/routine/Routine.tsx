@@ -40,6 +40,7 @@ export const Routine = () => {
       showSuccess('Removed slot');
     } else {
       dispatch(setCell({
+        cellId: cell.id,
         day: cell.day,
         timeRow: cell.timeRow || 'Custom',
         title: editTitle,
