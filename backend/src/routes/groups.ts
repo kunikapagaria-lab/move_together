@@ -122,14 +122,20 @@ router.get('/my-groups', protect, async (req: AuthRequest, res: Response) => {
 
         const memberTasks = activeCh.tasks || [];
         const totalTasks = memberTasks.length > 0 ? memberTasks.length : 8;
+        const memberTaskIds = memberTasks.map((t: any) => t.id);
 
+        // Only count completions that match a task actually on the member's
+        // current list - a log can carry stale ids from before they customized
+        // their tasks down, which previously inflated counts past the current
+        // total (e.g. showing "8/6 Completed").
         const logs = await DailyLog.find({ userId: memberUserId }).sort({ date: -1 });
         let streak = 0;
         const today = new Date();
         today.setHours(0,0,0,0);
-        
+
         for (let i = 0; i < logs.length; i++) {
-          if (logs[i].completedTaskIds.length >= totalTasks) {
+          const validCompletedCount = (logs[i].completedTaskIds || []).filter((id: string) => memberTaskIds.includes(id)).length;
+          if (validCompletedCount >= totalTasks) {
             streak++;
           } else {
             const logDate = new Date(logs[i].date);
@@ -144,8 +150,8 @@ router.get('/my-groups', protect, async (req: AuthRequest, res: Response) => {
 
         // Fetch today's log & completed tasks list
         const todayLog = logs.find(l => l.date === todayStr);
-        const completedTaskIds = todayLog?.completedTaskIds || [];
-        const todayCompleted = completedTaskIds.length;
+        const completedTaskIds = (todayLog?.completedTaskIds || []).filter((id: string) => memberTaskIds.includes(id));
+        const todayCompleted = Math.min(completedTaskIds.length, totalTasks);
 
         // Return details for friend inspection
         const taskDetails = memberTasks.map((t: any) => ({

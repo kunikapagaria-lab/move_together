@@ -119,10 +119,12 @@ router.get('/streak/:challengeId', protect, async (req: AuthRequest, res: Respon
     const logs = await DailyLog.find(query).sort({ date: -1 });
 
     let requiredTasks = 8;
+    let taskIds: string[] | null = null;
     if (mongoose.Types.ObjectId.isValid(challengeId)) {
       const challenge = await ActiveChallenge.findById(challengeId);
       if (challenge && challenge.tasks) {
         requiredTasks = (challenge.tasks as any).length;
+        taskIds = (challenge.tasks as any[]).map(t => t.id);
       }
     }
 
@@ -131,7 +133,11 @@ router.get('/streak/:challengeId', protect, async (req: AuthRequest, res: Respon
     today.setHours(0, 0, 0, 0);
 
     for (let i = 0; i < logs.length; i++) {
-      const completedCount = logs[i]?.completedTaskIds ? logs[i].completedTaskIds.length : 0;
+      const rawCompleted = logs[i]?.completedTaskIds || [];
+      // Only count completions matching a task currently on the challenge - a log
+      // can carry stale ids from before tasks were customized down, which
+      // previously inflated the count past the current required total.
+      const completedCount = taskIds ? rawCompleted.filter(id => taskIds!.includes(id)).length : rawCompleted.length;
       if (completedCount >= requiredTasks) {
         streak++;
       } else {
