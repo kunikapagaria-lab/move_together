@@ -22,8 +22,12 @@ export const NotificationsModal = () => {
     return () => clearInterval(intervalId);
   }, [dispatch, user]);
 
-  // Surface unread Nudge/Cheer crew signals as a toast (Cheer also gets confetti),
-  // then mark them read so they don't re-fire on the next poll.
+  // Surface unread Nudge/Cheer crew signals as a toast (Cheer also gets confetti) the
+  // moment they're seen live. Deliberately NOT marked read here: the toast is a
+  // best-effort "catch it live" bonus, but if the recipient wasn't looking, the
+  // notification must stay unread so it still shows up in the persistent bell
+  // (TopNav) instead of silently vanishing forever. `shownSignalIds` only prevents
+  // re-toasting the same one twice in this component's lifetime.
   useEffect(() => {
     const unreadSignals = notifications.filter(
       n => (n.type === 'nudge' || n.type === 'cheer') && !n.read && !shownSignalIds.current.has(n._id)
@@ -32,9 +36,8 @@ export const NotificationsModal = () => {
       shownSignalIds.current.add(n._id);
       showSuccess(n.message);
       if (n.type === 'cheer') triggerConfetti();
-      dispatch(markRead(n._id));
     });
-  }, [notifications, dispatch, showSuccess]);
+  }, [notifications, showSuccess]);
 
   // Find the first unread failure notification to display
   const failureNotification = notifications.find(n => n.type === 'failed' && !n.read);

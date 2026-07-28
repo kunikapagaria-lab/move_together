@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, LayoutDashboard, Users, Volume2, VolumeX, User, LogOut, Key, Camera, Book, Calendar, X, Eye, EyeOff, Lock } from 'lucide-react';
+import { Home, LayoutDashboard, Users, Volume2, VolumeX, User, LogOut, Key, Camera, Book, Calendar, X, Eye, EyeOff, Lock, Bell } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { cn } from '../ui/Button';
 import type { RootState, AppDispatch } from '../../store';
 import { logout } from '../../store/authSlice';
 import { toggleZenMode } from '../../store/settingsSlice';
+import { markRead } from '../../store/notificationSlice';
 import { getAthleteRank, ATHLETE_RANKS, type AthleteRank } from '../../utils/athleteRanks';
 import { useToast } from '../ui/Toast';
 import { api } from '../../services/api';
@@ -33,6 +34,11 @@ export const TopNav = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Crew signal (Nudge/Cheer) bell - persistent so a missed toast is never fully lost
+  const [isSignalsOpen, setIsSignalsOpen] = useState(false);
+  const signalsRef = useRef<HTMLDivElement>(null);
+  const unreadSignals = notifications.filter(n => (n.type === 'nudge' || n.type === 'cheer') && !n.read);
+
   // Change Password Modal State
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -51,10 +57,17 @@ export const TopNav = () => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
+      if (signalsRef.current && !signalsRef.current.contains(event.target as Node)) {
+        setIsSignalsOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleDismissSignal = (id: string) => {
+    dispatch(markRead(id));
+  };
 
   const handleLogout = () => {
     dispatch(logout());
@@ -190,6 +203,47 @@ export const TopNav = () => {
                 })}
               </div>
             </div>
+          </div>
+
+          {/* Crew Signal Bell (Nudge/Cheer) - persistent so a missed toast isn't lost */}
+          <div className="relative" ref={signalsRef}>
+            <button
+              onClick={() => setIsSignalsOpen(!isSignalsOpen)}
+              className="relative flex items-center justify-center h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-white/20 hover:bg-white/30 border border-white/30 text-white shadow-md transition-all cursor-pointer"
+            >
+              <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
+              {unreadSignals.length > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-[#e0531c] text-white text-[10px] font-extrabold border border-black/40 shadow-sm">
+                  {unreadSignals.length}
+                </span>
+              )}
+            </button>
+
+            {isSignalsOpen && (
+              <div className="absolute top-12 right-0 w-72 bg-black/95 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden py-2 animate-in fade-in slide-in-from-top-2 z-50">
+                <div className="px-4 py-2.5 border-b border-white/10">
+                  <p className="text-xs font-bold text-white uppercase tracking-widest">Crew Signals</p>
+                </div>
+                {unreadSignals.length === 0 ? (
+                  <p className="px-4 py-4 text-xs text-white/40 text-center">No new nudges or cheers.</p>
+                ) : (
+                  <div className="max-h-72 overflow-y-auto">
+                    {unreadSignals.map(n => (
+                      <div key={n._id} className="px-4 py-2.5 flex items-start justify-between gap-2 hover:bg-white/5 border-b border-white/5 last:border-b-0">
+                        <p className="text-xs text-white/80 leading-snug flex-1">{n.message}</p>
+                        <button
+                          onClick={() => handleDismissSignal(n._id)}
+                          className="p-1 text-white/40 hover:text-white transition-colors shrink-0"
+                          title="Dismiss"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Profile Dropdown Toggle */}
