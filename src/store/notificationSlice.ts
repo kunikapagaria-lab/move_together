@@ -4,7 +4,7 @@ import { api } from '../services/api';
 export interface Notification {
   _id: string;
   userId: string;
-  type: 'failed' | 'group_invite';
+  type: 'failed' | 'group_invite' | 'nudge' | 'cheer';
   message: string;
   relatedData?: any;
   read: boolean;
@@ -52,6 +52,17 @@ export const respondToInvite = createAsyncThunk(
   async ({ id, action }: { id: string; action: 'accept' | 'decline' }, thunkAPI) => {
     try {
       return await api.respondToGroupInvite(id, action);
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  }
+);
+
+export const sendCrewSignal = createAsyncThunk(
+  'notification/sendCrewSignal',
+  async ({ recipientId, kind }: { recipientId: string; kind: 'nudge' | 'cheer' }, thunkAPI) => {
+    try {
+      return await api.sendCrewSignal(recipientId, kind);
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.message);
     }

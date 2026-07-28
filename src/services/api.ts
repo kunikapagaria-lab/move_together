@@ -174,6 +174,13 @@ export const api = {
       body: JSON.stringify({ action })
     });
   },
+  sendCrewSignal: async (recipientId: string, kind: 'nudge' | 'cheer') => {
+    return safeFetch(`${API_URL}/notifications/crew-signal`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ recipientId, kind })
+    });
+  },
   sendFriendRequest: async (recipientId: string) => {
     return safeFetch(`${API_URL}/friends/request`, {
       method: 'POST',

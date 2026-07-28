@@ -7,6 +7,7 @@ import type { AppDispatch, RootState } from '../../store';
 import { fetchChallengeData, startChallenge, cancelChallenge } from '../../store/challengeSlice';
 import { fetchMyGroups } from '../../store/groupSlice';
 import { fetchFriends } from '../../store/friendSlice';
+import { sendCrewSignal } from '../../store/notificationSlice';
 import { PRESET_TEMPLATES } from '../../data/presetTemplates';
 import type { ChallengePreset } from '../../data/presetTemplates';
 import { getAthleteRank } from '../../utils/athleteRanks';
@@ -63,12 +64,22 @@ export const Home = () => {
 
   const rank = getAthleteRank(streak);
 
-  const handleNudge = (name: string) => {
-    showSuccess(`🔥 Sent a Discipline Nudge to ${name}!`);
+  const handleNudge = async (member: any) => {
+    const result = await dispatch(sendCrewSignal({ recipientId: member.userId._id, kind: 'nudge' }));
+    if (sendCrewSignal.fulfilled.match(result)) {
+      showSuccess(`🔥 Sent a Discipline Nudge to ${member.userId.displayName}!`);
+    } else {
+      showError((result.payload as string) || 'Failed to send nudge.');
+    }
   };
 
-  const handleCheer = (name: string) => {
-    showSuccess(`👏 Sent a Cheer to ${name}! Keep pushing!`);
+  const handleCheer = async (member: any) => {
+    const result = await dispatch(sendCrewSignal({ recipientId: member.userId._id, kind: 'cheer' }));
+    if (sendCrewSignal.fulfilled.match(result)) {
+      showSuccess(`👏 Sent a Cheer to ${member.userId.displayName}! Keep pushing!`);
+    } else {
+      showError((result.payload as string) || 'Failed to send cheer.');
+    }
   };
 
   useEffect(() => {
@@ -531,14 +542,14 @@ export const Home = () => {
                    {!isSelf && (
                      <>
                        <button
-                         onClick={() => handleNudge(member.userId.displayName)}
+                         onClick={() => handleNudge(member)}
                          className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-[11px] py-1.5 px-2.5 rounded-lg border border-amber-500/30 transition-all flex items-center gap-1 cursor-pointer"
                          title="Nudge friend to complete daily habits"
                        >
                          <Zap className="w-3.5 h-3.5" /> Nudge
                        </button>
                        <button
-                         onClick={() => handleCheer(member.userId.displayName)}
+                         onClick={() => handleCheer(member)}
                          className="bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 font-bold text-[11px] py-1.5 px-2.5 rounded-lg border border-indigo-500/30 transition-all flex items-center gap-1 cursor-pointer"
                          title="Send encouragement cheer"
                        >

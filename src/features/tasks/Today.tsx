@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../store';
 import { toggleTask } from '../../store/challengeSlice';
-import confetti from 'canvas-confetti';
+import { triggerConfetti } from '../../utils/confetti';
 import { WaterTracker } from './WaterTracker';
 import { PhotoUpload } from './PhotoUpload';
 import { CustomizeTasksModal } from './CustomizeTasksModal';
@@ -123,17 +123,6 @@ export const Today = ({ hideHeader = false }: { hideHeader?: boolean }) => {
       osc.start();
       osc.stop(ctx.currentTime + 0.3);
     } catch (_) {}
-  };
-
-  const triggerConfetti = () => {
-    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-    const end = Date.now() + 3000;
-    const frame = () => {
-      confetti({ particleCount: 5, angle: 60,  spread: 55, origin: { x: 0 }, colors: ['#4f46e5','#818cf8','#c7d2fe'] });
-      confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#4f46e5','#818cf8','#c7d2fe'] });
-      if (Date.now() < end) requestAnimationFrame(frame);
-    };
-    frame();
   };
 
   const totalCount = tasks.length || 8;

@@ -39,6 +39,7 @@ router.put('/:id/read', protect, async (req: AuthRequest, res: Response) => {
 import ActiveChallenge from '../models/ActiveChallenge';
 import ChallengeGroup from '../models/ChallengeGroup';
 import Group from '../models/Group';
+import User from '../models/User';
 
 // @route   POST /api/notifications/:id/respond
 // @desc    Respond to a group invite notification (accept/decline)
@@ -92,6 +93,52 @@ router.post('/:id/respond', protect, async (req: AuthRequest, res: Response) => 
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error responding to invite' });
+  }
+});
+
+// @route   POST /api/notifications/crew-signal
+// @desc    Send a Nudge or Cheer to a crew-mate (must share an active crew)
+router.post('/crew-signal', protect, async (req: AuthRequest, res: Response) => {
+  const senderId = req.user?.id;
+  const { recipientId, kind } = req.body;
+
+  if (!recipientId || (kind !== 'nudge' && kind !== 'cheer')) {
+    return res.status(400).json({ error: 'recipientId and a valid kind (nudge or cheer) are required' });
+  }
+  if (recipientId === senderId) {
+    return res.status(400).json({ error: 'You cannot send a crew signal to yourself' });
+  }
+
+  try {
+    // Confirm sender and recipient share an active crew
+    const sharedCrew = await ChallengeGroup.findOne({
+      $or: [{ members: senderId }, { creatorId: senderId }],
+      members: recipientId,
+      isActive: true
+    });
+
+    if (!sharedCrew) {
+      return res.status(403).json({ error: 'You can only nudge or cheer members of your own crew.' });
+    }
+
+    const sender = await User.findById(senderId);
+    const senderName = sender?.displayName || 'A crew-mate';
+
+    const message = kind === 'cheer'
+      ? `${senderName} sent you a Cheer! 👏`
+      : `${senderName} nudged you to get moving! 🔥`;
+
+    await Notification.create({
+      userId: recipientId,
+      type: kind,
+      message,
+      relatedData: { senderId, senderName, kind }
+    });
+
+    res.status(201).json({ message: 'Sent!' });
+  } catch (error) {
+    console.error('Error sending crew signal:', error);
+    res.status(500).json({ error: 'Server error sending crew signal' });
   }
 });
 

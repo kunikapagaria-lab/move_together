@@ -1,19 +1,40 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { AppDispatch, RootState } from '../../store';
 import { fetchNotifications, markRead } from '../../store/notificationSlice';
+import { useToast } from '../../components/ui/Toast';
+import { triggerConfetti } from '../../utils/confetti';
 
 export const NotificationsModal = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const { showSuccess } = useToast();
   const { notifications } = useSelector((state: RootState) => state.notification);
   const { user } = useSelector((state: RootState) => state.auth);
+  const shownSignalIds = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    if (user) {
+    if (!user) return;
+    dispatch(fetchNotifications());
+    const intervalId = setInterval(() => {
       dispatch(fetchNotifications());
-    }
+    }, 3000);
+    return () => clearInterval(intervalId);
   }, [dispatch, user]);
+
+  // Surface unread Nudge/Cheer crew signals as a toast (Cheer also gets confetti),
+  // then mark them read so they don't re-fire on the next poll.
+  useEffect(() => {
+    const unreadSignals = notifications.filter(
+      n => (n.type === 'nudge' || n.type === 'cheer') && !n.read && !shownSignalIds.current.has(n._id)
+    );
+    unreadSignals.forEach(n => {
+      shownSignalIds.current.add(n._id);
+      showSuccess(n.message);
+      if (n.type === 'cheer') triggerConfetti();
+      dispatch(markRead(n._id));
+    });
+  }, [notifications, dispatch, showSuccess]);
 
   // Find the first unread failure notification to display
   const failureNotification = notifications.find(n => n.type === 'failed' && !n.read);
