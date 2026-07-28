@@ -7,6 +7,7 @@ import { protect, AuthRequest } from '../middleware/auth';
 const router = express.Router();
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const ALLOWED_AVATARS = ['🏃', '🔥', '⚡', '🏆', '🌱', '👑', '🥊', '🚴'];
 
 // Generate JWT
 const generateToken = (id: string) => {
@@ -67,6 +68,7 @@ router.post('/register', async (req, res) => {
         _id: user._id,
         displayName: user.displayName,
         email: user.email,
+        avatar: user.avatar,
         token: generateToken(user._id.toString()),
       });
     } else {
@@ -90,6 +92,7 @@ router.post('/register', async (req, res) => {
           _id: fallbackUser._id,
           displayName: fallbackUser.displayName,
           email: fallbackUser.email,
+          avatar: fallbackUser.avatar,
           token: generateToken(fallbackUser._id.toString()),
         });
       } catch (retryErr: any) {
@@ -120,6 +123,7 @@ router.post('/login', async (req, res) => {
         _id: user._id,
         displayName: user.displayName,
         email: user.email,
+        avatar: user.avatar,
         token: generateToken(user._id.toString()),
       });
     } else {
@@ -163,6 +167,28 @@ router.put('/change-password', protect, async (req: AuthRequest, res) => {
   } catch (error) {
     console.error('Change password error:', error);
     res.status(500).json({ error: 'Server error changing password' });
+  }
+});
+
+// @route   PUT /api/auth/update-avatar
+// @desc    Update the logged-in user's avatar
+router.put('/update-avatar', protect, async (req: AuthRequest, res) => {
+  const userId = req.user?.id;
+  const { avatar } = req.body;
+
+  if (!ALLOWED_AVATARS.includes(avatar)) {
+    return res.status(400).json({ error: 'Invalid avatar selection' });
+  }
+
+  try {
+    const user = await User.findByIdAndUpdate(userId, { avatar }, { new: true });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json({ avatar: user.avatar });
+  } catch (error) {
+    console.error('Update avatar error:', error);
+    res.status(500).json({ error: 'Server error updating avatar' });
   }
 });
 

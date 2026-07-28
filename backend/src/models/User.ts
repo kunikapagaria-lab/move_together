@@ -5,6 +5,7 @@ export interface IUser extends Document {
   displayName: string;
   password?: string; // Optional for OAuth users
   authProviderId: string; // E.g. Google sub ID or "local"
+  avatar?: string;
   preferences: {
     coachStyle: 'tough-love' | 'gentle' | 'zen';
     notificationsEnabled: boolean;
@@ -23,6 +24,7 @@ const UserSchema: Schema = new Schema(
     password: { type: String }, // Hashed password for local auth
     displayName: { type: String, required: true },
     authProviderId: { type: String, required: true },
+    avatar: { type: String },
     preferences: {
       coachStyle: { 
         type: String, 

@@ -5,6 +5,7 @@ export interface User {
   _id: string;
   displayName: string;
   email: string;
+  avatar?: string;
   token: string;
 }
 
@@ -56,9 +57,15 @@ export const authSlice = createSlice({
     logout: (state) => {
       state.user = null;
       localStorage.removeItem('user');
+    },
+    setAvatar: (state, action: PayloadAction<string>) => {
+      if (state.user) {
+        state.user.avatar = action.payload;
+        localStorage.setItem('user', JSON.stringify(state.user));
+      }
     }
   },
 });
 
-export const { reset, loginStart, loginSuccess, loginFailure, logout } = authSlice.actions;
+export const { reset, loginStart, loginSuccess, loginFailure, logout, setAvatar } = authSlice.actions;
 export default authSlice.reducer;

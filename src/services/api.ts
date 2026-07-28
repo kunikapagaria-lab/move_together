@@ -52,6 +52,13 @@ export const api = {
       body: JSON.stringify({ currentPassword, newPassword })
     });
   },
+  updateAvatar: async (avatar: string) => {
+    return safeFetch(`${API_URL}/auth/update-avatar`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ avatar })
+    });
+  },
 
   // --- Challenges ---
   getActiveChallenge: async () => {

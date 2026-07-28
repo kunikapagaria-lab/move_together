@@ -4,7 +4,7 @@ import { Home, LayoutDashboard, Users, Volume2, VolumeX, User, LogOut, Key, Came
 import { useDispatch, useSelector } from 'react-redux';
 import { cn } from '../ui/Button';
 import type { RootState, AppDispatch } from '../../store';
-import { logout } from '../../store/authSlice';
+import { logout, setAvatar } from '../../store/authSlice';
 import { toggleZenMode } from '../../store/settingsSlice';
 import { markRead } from '../../store/notificationSlice';
 import { getAthleteRank, ATHLETE_RANKS, type AthleteRank } from '../../utils/athleteRanks';
@@ -50,7 +50,8 @@ export const TopNav = () => {
 
   // Change Avatar Modal State
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
-  const [selectedAvatar, setSelectedAvatar] = useState('🏃');
+  const selectedAvatar = user?.avatar || '🏃';
+  const [isSavingAvatar, setIsSavingAvatar] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -67,6 +68,20 @@ export const TopNav = () => {
 
   const handleDismissSignal = (id: string) => {
     dispatch(markRead(id));
+  };
+
+  const handleSelectAvatar = async (avatar: string) => {
+    setIsSavingAvatar(true);
+    try {
+      await api.updateAvatar(avatar);
+      dispatch(setAvatar(avatar));
+      showSuccess(`Avatar updated to ${avatar}!`);
+      setIsAvatarModalOpen(false);
+    } catch (err: any) {
+      showError(err?.message || 'Failed to save avatar. Please try again.');
+    } finally {
+      setIsSavingAvatar(false);
+    }
   };
 
   const handleLogout = () => {
@@ -465,13 +480,10 @@ export const TopNav = () => {
             {['🏃', '🔥', '⚡', '🏆', '🌱', '👑', '🥊', '🚴'].map(av => (
               <button
                 key={av}
-                onClick={() => {
-                  setSelectedAvatar(av);
-                  showSuccess(`Avatar updated to ${av}!`);
-                  setIsAvatarModalOpen(false);
-                }}
+                disabled={isSavingAvatar}
+                onClick={() => handleSelectAvatar(av)}
                 className={cn(
-                  "h-16 text-2xl rounded-2xl border flex items-center justify-center transition-all cursor-pointer",
+                  "h-16 text-2xl rounded-2xl border flex items-center justify-center transition-all cursor-pointer disabled:opacity-50",
                   selectedAvatar === av
                     ? "bg-white/20 border-white text-white shadow-lg scale-105"
                     : "bg-white/5 border-white/10 hover:bg-white/10 text-white/80"
