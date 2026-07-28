@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Plus, Trash2, Calendar, GripVertical } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '../../store';
@@ -28,6 +28,11 @@ export const Routine = () => {
   // Drag and Drop State
   const [draggedCellId, setDraggedCellId] = useState<string | null>(null);
 
+  // Set right before an Escape-cancel so the blur it triggers (when the input
+  // unmounts) doesn't also save/add - blur-to-save below is otherwise the only
+  // way edits/new tasks get committed if you click away instead of pressing Enter.
+  const cancellingRef = useRef(false);
+
   const handleStartEdit = (cell: TimetableCell) => {
     setEditingCellId(cell.id);
     setEditTitle(cell.title);
@@ -51,6 +56,21 @@ export const Routine = () => {
     setEditingCellId(null);
   };
 
+  const handleCancelEdit = () => {
+    cancellingRef.current = true;
+    setEditingCellId(null);
+  };
+
+  const handleEditBlur = (e: React.FocusEvent<HTMLDivElement>, cell: TimetableCell) => {
+    if (cancellingRef.current) {
+      cancellingRef.current = false;
+      return;
+    }
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      handleSaveEdit(cell);
+    }
+  };
+
   const handleAddNewTask = (day: TimetableCell['day']) => {
     if (!newTitle.trim()) return;
     dispatch(setCell({
@@ -63,6 +83,21 @@ export const Routine = () => {
     setNewTitle('');
     setNewSubtitle('');
     setAddingDay(null);
+  };
+
+  const handleCancelAdd = () => {
+    cancellingRef.current = true;
+    setAddingDay(null);
+  };
+
+  const handleAddBlur = (e: React.FocusEvent<HTMLDivElement>, day: TimetableCell['day']) => {
+    if (cancellingRef.current) {
+      cancellingRef.current = false;
+      return;
+    }
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      handleAddNewTask(day);
+    }
   };
 
   // Drag and drop handlers
@@ -132,7 +167,11 @@ export const Routine = () => {
 
                     return isEditing ? (
                       /* SEAMLESS IN-PLACE GLASS EDITING (NO BLACK BOX, NO SAVE/CANCEL BUTTONS) */
-                      <div key={cell.id} className="bg-white/25 backdrop-blur-md border border-white/40 rounded-2xl p-3 text-center shadow-lg relative">
+                      <div
+                        key={cell.id}
+                        className="bg-white/25 backdrop-blur-md border border-white/40 rounded-2xl p-3 text-center shadow-lg relative"
+                        onBlur={e => handleEditBlur(e, cell)}
+                      >
                         <input
                           type="text"
                           value={editTitle}
@@ -141,7 +180,7 @@ export const Routine = () => {
                           autoFocus
                           onKeyDown={e => {
                             if (e.key === 'Enter') handleSaveEdit(cell);
-                            if (e.key === 'Escape') setEditingCellId(null);
+                            if (e.key === 'Escape') handleCancelEdit();
                           }}
                           className="w-full bg-transparent text-white font-black text-xs sm:text-sm uppercase tracking-wide leading-tight text-center outline-none border-b border-white/40 focus:border-white pb-0.5 placeholder-white/40"
                         />
@@ -152,7 +191,7 @@ export const Routine = () => {
                           placeholder="Time (e.g. 5:00am - 7:00am)"
                           onKeyDown={e => {
                             if (e.key === 'Enter') handleSaveEdit(cell);
-                            if (e.key === 'Escape') setEditingCellId(null);
+                            if (e.key === 'Escape') handleCancelEdit();
                           }}
                           className="w-full bg-transparent text-white/80 font-medium text-[10px] sm:text-xs text-center outline-none border-b border-white/20 focus:border-white mt-1.5 placeholder-white/30"
                         />
@@ -198,7 +237,10 @@ export const Routine = () => {
               <div className="mt-3">
                 {addingDay === day ? (
                   /* SEAMLESS IN-PLACE ADD TASK FORM (NO BLACK BOX) */
-                  <div className="bg-white/20 backdrop-blur-md border border-white/40 rounded-2xl p-3 text-center shadow-lg relative">
+                  <div
+                    className="bg-white/20 backdrop-blur-md border border-white/40 rounded-2xl p-3 text-center shadow-lg relative"
+                    onBlur={e => handleAddBlur(e, day)}
+                  >
                     <input
                       type="text"
                       value={newTitle}
@@ -207,7 +249,7 @@ export const Routine = () => {
                       autoFocus
                       onKeyDown={e => {
                         if (e.key === 'Enter') handleAddNewTask(day);
-                        if (e.key === 'Escape') setAddingDay(null);
+                        if (e.key === 'Escape') handleCancelAdd();
                       }}
                       className="w-full bg-transparent text-white font-black text-xs sm:text-sm uppercase tracking-wide leading-tight text-center outline-none border-b border-white/40 focus:border-white pb-0.5 placeholder-white/40"
                     />
@@ -218,7 +260,7 @@ export const Routine = () => {
                       placeholder="Time (e.g. 8:00am - 10:00am)"
                       onKeyDown={e => {
                         if (e.key === 'Enter') handleAddNewTask(day);
-                        if (e.key === 'Escape') setAddingDay(null);
+                        if (e.key === 'Escape') handleCancelAdd();
                       }}
                       className="w-full bg-transparent text-white/80 font-medium text-[10px] sm:text-xs text-center outline-none border-b border-white/20 focus:border-white mt-1.5 placeholder-white/30"
                     />
