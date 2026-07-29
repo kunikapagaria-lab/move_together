@@ -4,9 +4,9 @@ import ChallengeTemplate from '../models/ChallengeTemplate';
 
 import ActiveChallenge from '../models/ActiveChallenge';
 import ChallengeGroup from '../models/ChallengeGroup';
-import Group from '../models/Group';
 import Notification from '../models/Notification';
 import User from '../models/User';
+import { cancelActiveChallenge } from '../utils/challengeHelpers';
 
 const router = express.Router();
 
@@ -170,35 +170,9 @@ const getTodayStr = () => {
 // @desc    Cancel current active challenge
 router.post('/cancel', protect, async (req: AuthRequest, res: Response) => {
   const userId = req.user?.id;
-  const todayStr = getTodayStr();
 
   try {
-    const challenge = await ActiveChallenge.findOneAndUpdate(
-      { userId, status: 'active' },
-      { status: 'cancelled' },
-      { new: true }
-    );
-
-    // Remove the cancelling user from any crews they're part of, so their old crew
-    // isn't reused for their next challenge. Only deactivate a crew entirely once it
-    // has no members left - other members still mid-challenge should keep their crew.
-    const userGroups = await Group.find({ members: userId });
-    for (const g of userGroups) {
-      g.members = g.members.filter((m: any) => m.toString() !== userId) as any;
-      if (g.members.length === 0) g.isActive = false;
-      await g.save();
-    }
-
-    const userChallengeGroups = await ChallengeGroup.find({ $or: [{ members: userId }, { creatorId: userId }] });
-    for (const cg of userChallengeGroups) {
-      cg.members = cg.members.filter((m: any) => m.toString() !== userId) as any;
-      if (cg.members.length === 0) cg.isActive = false;
-      await cg.save();
-    }
-
-    // Clear today's log so completed tasks from cancelled challenge don't bleed into next challenge
-    await DailyLog.findOneAndDelete({ userId, date: todayStr });
-
+    const challenge = await cancelActiveChallenge(userId as string);
     res.json(challenge);
   } catch (error) {
     console.error(error);

@@ -86,7 +86,10 @@ router.get('/my-groups', protect, async (req: AuthRequest, res: Response) => {
     // The legacy Group model is only used by the old, currently-unreachable
     // join-by-code feature and is intentionally not surfaced here anymore - returning
     // both used to produce two separate entries for what is really one crew.
-    const rawChallengeGroups = await ChallengeGroup.find({ $or: [{ members: userId }, { creatorId: userId }] })
+    const rawChallengeGroups = await ChallengeGroup.find({
+      $or: [{ members: userId }, { creatorId: userId }],
+      isActive: true
+    })
       .populate('members', 'displayName email')
       .populate('creatorId', 'displayName email')
       .exec();

@@ -12,16 +12,22 @@ import {
   clearSearchResults
 } from '../../store/friendSlice';
 import { fetchNotifications, respondToInvite } from '../../store/notificationSlice';
+import { fetchChallengeData } from '../../store/challengeSlice';
 import { BackButton } from '../../components/ui/BackButton';
+import { ConfirmModal } from '../../components/ui/ConfirmModal';
+import { useToast } from '../../components/ui/Toast';
 
 export const Friends = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const { showSuccess, showError } = useToast();
   const { user } = useSelector((state: RootState) => state.auth);
   const { friends, searchResults, isSearching } = useSelector((state: RootState) => state.friend);
   const { notifications } = useSelector((state: RootState) => state.notification);
-  
+  const { activeChallenge } = useSelector((state: RootState) => state.challenge);
+
   const [searchQuery, setSearchQuery] = useState('');
+  const [pendingSwitchInviteId, setPendingSwitchInviteId] = useState<string | null>(null);
 
   const groupInvites = notifications.filter(n => n.type === 'group_invite' && !n.read);
 
@@ -56,6 +62,27 @@ export const Friends = () => {
 
   const handleReject = (id: string) => {
     dispatch(rejectFriendRequest(id));
+  };
+
+  const executeAcceptInvite = async (inviteId: string) => {
+    const result = await dispatch(respondToInvite({ id: inviteId, action: 'accept' }));
+    if (respondToInvite.fulfilled.match(result)) {
+      await dispatch(fetchChallengeData());
+      showSuccess('Joined the challenge! 🏃');
+      navigate('/dashboard');
+    } else {
+      showError((result.payload as string) || 'Failed to join this challenge. Please try again.');
+    }
+  };
+
+  const handleAcceptInvite = (inviteId: string) => {
+    if (activeChallenge) {
+      // Accepting will replace their current challenge - confirm first, same as
+      // the manual "Cancel Challenge" flow already does.
+      setPendingSwitchInviteId(inviteId);
+    } else {
+      executeAcceptInvite(inviteId);
+    }
   };
 
   const pendingIncoming = friends.filter(f => f.recipient._id === user?._id && f.status === 'pending');
@@ -190,8 +217,8 @@ export const Friends = () => {
                    </div>
                 </div>
                 <div className="flex gap-2.5 mt-1">
-                   <button 
-                     onClick={() => dispatch(respondToInvite({ id: invite._id, action: 'accept' })).then(() => navigate('/dashboard'))}
+                   <button
+                     onClick={() => handleAcceptInvite(invite._id)}
                      className="flex-1 bg-white hover:bg-white/90 text-black rounded-xl py-2.5 text-xs font-extrabold transition-all shadow-lg cursor-pointer"
                    >
                      Accept & Join Challenge 🏃
@@ -271,6 +298,20 @@ export const Friends = () => {
           </div>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={!!pendingSwitchInviteId}
+        onClose={() => setPendingSwitchInviteId(null)}
+        onConfirm={() => {
+          if (pendingSwitchInviteId) executeAcceptInvite(pendingSwitchInviteId);
+          setPendingSwitchInviteId(null);
+        }}
+        title="Switch to This Challenge?"
+        message="Accepting this invite will cancel your current active challenge and its progress, then join you into this one instead."
+        confirmText="Switch Challenge"
+        cancelText="Keep My Challenge"
+        type="danger"
+      />
     </>
   );
 };

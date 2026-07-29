@@ -40,6 +40,7 @@ import ActiveChallenge from '../models/ActiveChallenge';
 import ChallengeGroup from '../models/ChallengeGroup';
 import Group from '../models/Group';
 import User from '../models/User';
+import { cancelActiveChallenge } from '../utils/challengeHelpers';
 
 // @route   POST /api/notifications/:id/respond
 // @desc    Respond to a group invite notification (accept/decline)
@@ -55,10 +56,13 @@ router.post('/:id/respond', protect, async (req: AuthRequest, res: Response) => 
     }
 
     if (action === 'accept') {
-      // Check if user already has an active challenge
+      // If they're already on a challenge, accepting a new invite switches them
+      // over - cancel the old one (and leave its crew) first. The frontend is
+      // expected to confirm this with the user before calling accept, since it
+      // costs them their current progress.
       const existing = await ActiveChallenge.findOne({ userId, status: 'active' });
       if (existing) {
-        return res.status(400).json({ error: 'You already have an active challenge. Please cancel it before joining a new group.' });
+        await cancelActiveChallenge(userId as string);
       }
 
       // Create their active challenge matching the group
