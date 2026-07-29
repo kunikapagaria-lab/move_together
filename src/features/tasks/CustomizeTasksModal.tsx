@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Plus, Trash2, X, Sparkles, Dumbbell, Activity, Utensils, Apple, BookOpen, Droplets, Camera } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -47,6 +47,16 @@ export const CustomizeTasksModal = ({
   const [newTitle, setNewTitle] = useState('');
   const [selectedIcon, setSelectedIcon] = useState('Sparkles');
 
+  // This modal stays mounted across opens (only its visibility toggles), so without
+  // this, taskList would only ever reflect whatever was in memory the very first
+  // time it opened - not the latest saved tasks - every time it's reopened later.
+  useEffect(() => {
+    if (isOpen) {
+      setTaskList(initialTasks);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleUpdateTaskTitle = (id: string, newTitle: string) => {
@@ -60,12 +70,27 @@ export const CustomizeTasksModal = ({
 
   const handleAddTask = () => {
     if (!newTitle.trim()) return;
-    const newTask = {
-      id: 'custom_' + Date.now(),
-      title: newTitle.trim(),
-      iconName: selectedIcon,
-      color: '#ffffff'
-    };
+    const trimmedTitle = newTitle.trim();
+
+    // If a task with this exact title already existed before this edit session
+    // (e.g. it was just deleted by accident and is being re-added), reuse its
+    // original id instead of minting a new one - a fresh id here silently
+    // orphans every day already logged as complete under the old id, which is
+    // exactly what broke a real user's streak.
+    const matchingPriorTask = initialTasks.find(
+      (t: any) =>
+        t.title.trim().toLowerCase() === trimmedTitle.toLowerCase() &&
+        !taskList.some((existing: any) => existing.id === t.id)
+    );
+
+    const newTask = matchingPriorTask
+      ? { ...matchingPriorTask, title: trimmedTitle, iconName: selectedIcon, color: '#ffffff' }
+      : {
+          id: 'custom_' + Date.now(),
+          title: trimmedTitle,
+          iconName: selectedIcon,
+          color: '#ffffff'
+        };
     setTaskList(prev => [...prev, newTask]);
     setNewTitle('');
   };
