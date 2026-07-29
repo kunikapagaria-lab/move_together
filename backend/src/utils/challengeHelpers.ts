@@ -2,11 +2,7 @@ import ActiveChallenge from '../models/ActiveChallenge';
 import Group from '../models/Group';
 import ChallengeGroup from '../models/ChallengeGroup';
 import DailyLog from '../models/DailyLog';
-
-export const getTodayStr = () => {
-  const today = new Date();
-  return today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
-};
+import { getTodayStr } from './dateUtils';
 
 // Cancels a user's current active challenge and removes them from any crews they're
 // part of, so their old crew isn't reused for their next challenge. Only deactivates

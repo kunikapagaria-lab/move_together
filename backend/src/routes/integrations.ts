@@ -2,13 +2,9 @@ import express, { Response } from 'express';
 import { protect, AuthRequest } from '../middleware/auth';
 import ActiveChallenge from '../models/ActiveChallenge';
 import DailyLog from '../models/DailyLog';
+import { getTodayStr } from '../utils/dateUtils';
 
 const router = express.Router();
-
-const getTodayStr = () => {
-  const today = new Date();
-  return today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
-};
 
 // @route   POST /api/integrations/sync
 // @desc    Log a manually-entered workout as a "simulated" wearable sync.

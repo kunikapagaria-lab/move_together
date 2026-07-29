@@ -64,12 +64,7 @@ router.post('/join', protect, async (req: AuthRequest, res: Response) => {
 });
 
 import DailyLog from '../models/DailyLog';
-
-// Helper to format Date to YYYY-MM-DD in local time
-const getTodayStr = () => {
-  const today = new Date();
-  return today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
-};
+import { getTodayStr } from '../utils/dateUtils';
 
 import ActiveChallenge from '../models/ActiveChallenge';
 
@@ -133,21 +128,15 @@ router.get('/my-groups', protect, async (req: AuthRequest, res: Response) => {
         // total (e.g. showing "8/6 Completed").
         const logs = await DailyLog.find({ userId: memberUserId }).sort({ date: -1 });
         let streak = 0;
-        const today = new Date();
-        today.setHours(0,0,0,0);
 
         for (let i = 0; i < logs.length; i++) {
           const validCompletedCount = (logs[i].completedTaskIds || []).filter((id: string) => memberTaskIds.includes(id)).length;
           if (validCompletedCount >= totalTasks) {
             streak++;
+          } else if (logs[i].date === todayStr) {
+            continue;
           } else {
-            const logDate = new Date(logs[i].date);
-            logDate.setHours(0,0,0,0);
-            if (logDate.getTime() === today.getTime()) {
-               continue;
-            } else {
-               break;
-            }
+            break;
           }
         }
 

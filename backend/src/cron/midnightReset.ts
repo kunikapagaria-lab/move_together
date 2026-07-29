@@ -2,33 +2,33 @@ import cron from 'node-cron';
 import ActiveChallenge from '../models/ActiveChallenge';
 import DailyLog from '../models/DailyLog';
 import Notification from '../models/Notification';
+import { getDateStrDaysAgo, toISTDateStrFrom } from '../utils/dateUtils';
 
 export const startCronJobs = () => {
-  // Run every night at midnight (server time)
+  // Runs at IST midnight (the app's user base's timezone), not the server's own
+  // timezone - the server (e.g. Render, which runs on UTC) would otherwise
+  // evaluate "yesterday" up to 5.5 hours after a user's actual local midnight,
+  // wrongly judging a day they hadn't even finished yet.
   cron.schedule('0 0 * * *', async () => {
     console.log('Running midnight reset check...');
-    
+
     try {
       // 1. Get all active challenges
       const activeChallenges = await ActiveChallenge.find({ status: 'active' });
 
-      // Calculate yesterday's date string
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.getFullYear() + '-' + String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + String(yesterday.getDate()).padStart(2, '0');
+      const yesterdayStr = getDateStrDaysAgo(1);
 
       // 2. Check if they completed all tasks yesterday
       for (const challenge of activeChallenges) {
-        // If the challenge started today, skip them (they haven't had a chance to fail yesterday)
-        const startDate = new Date(challenge.startDate);
-        startDate.setHours(0,0,0,0);
-        yesterday.setHours(0,0,0,0);
-        
-        if (startDate.getTime() > yesterday.getTime()) {
-           continue; // They started today or in the future
+        // If the challenge started today (IST), skip them - they haven't had a
+        // chance to fail yesterday yet.
+        const startDateStr = toISTDateStrFrom(challenge.startDate);
+        if (startDateStr > yesterdayStr) {
+          continue; // They started today or in the future
         }
 
         const requiredTasksCount = challenge.tasks.length;
+        const taskIds = (challenge.tasks as any[]).map(t => t.id);
 
         // Fetch yesterday's log for this challenge
         const log = await DailyLog.findOne({
@@ -37,6 +37,11 @@ export const startCronJobs = () => {
           date: yesterdayStr
         });
 
+        // Only count completions matching a task currently on the challenge - a
+        // log can carry stale ids from before tasks were customized, which
+        // could otherwise wrongly fail (or wrongly spare) someone.
+        const validCompletedCount = log ? (log.completedTaskIds || []).filter(id => taskIds.includes(id)).length : 0;
+
         // If yesterday was a frozen date, skip failure (protected by Streak Freeze)
         const frozenDates: string[] = (challenge as any).frozenDates || [];
         if (frozenDates.includes(yesterdayStr)) {
@@ -44,11 +49,11 @@ export const startCronJobs = () => {
           continue;
         }
 
-        if (!log || log.completedTaskIds.length < requiredTasksCount) {
+        if (validCompletedCount < requiredTasksCount) {
           challenge.status = 'failed';
           await challenge.save();
           console.log(`Challenge ${challenge._id} for user ${challenge.userId} marked as failed.`);
-          
+
           // Push a notification to the user
           await Notification.create({
             userId: challenge.userId,
@@ -60,5 +65,5 @@ export const startCronJobs = () => {
     } catch (error) {
       console.error('Error in midnight cron job:', error);
     }
-  });
+  }, { timezone: 'Asia/Kolkata' });
 };

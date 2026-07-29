@@ -3,13 +3,9 @@ import mongoose from 'mongoose';
 import { protect, AuthRequest } from '../middleware/auth';
 import DailyLog from '../models/DailyLog';
 import ActiveChallenge from '../models/ActiveChallenge';
+import { getTodayStr } from '../utils/dateUtils';
 
 const router = express.Router();
-
-const getTodayStr = () => {
-  const today = new Date();
-  return today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
-};
 
 const safeQuery = (userId: any, rawId: string | string[], extra: any = {}) => {
   const challengeId = Array.isArray(rawId) ? rawId[0] : rawId;
@@ -129,8 +125,7 @@ router.get('/streak/:challengeId', protect, async (req: AuthRequest, res: Respon
     }
 
     let streak = 0;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const todayStr = getTodayStr();
 
     for (let i = 0; i < logs.length; i++) {
       const rawCompleted = logs[i]?.completedTaskIds || [];
@@ -140,14 +135,10 @@ router.get('/streak/:challengeId', protect, async (req: AuthRequest, res: Respon
       const completedCount = taskIds ? rawCompleted.filter(id => taskIds!.includes(id)).length : rawCompleted.length;
       if (completedCount >= requiredTasks) {
         streak++;
+      } else if (logs[i]?.date === todayStr) {
+        continue;
       } else {
-        const logDate = logs[i]?.date ? new Date(logs[i].date) : new Date();
-        logDate.setHours(0, 0, 0, 0);
-        if (logDate.getTime() === today.getTime()) {
-          continue;
-        } else {
-          break;
-        }
+        break;
       }
     }
 

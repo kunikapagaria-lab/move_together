@@ -7,6 +7,7 @@ import ChallengeGroup from '../models/ChallengeGroup';
 import Notification from '../models/Notification';
 import User from '../models/User';
 import { cancelActiveChallenge } from '../utils/challengeHelpers';
+import { getTodayStr } from '../utils/dateUtils';
 
 const router = express.Router();
 
@@ -124,8 +125,7 @@ router.put('/active/tasks', protect, async (req: AuthRequest, res: Response) => 
 // @desc    Freeze today's challenge progress (Streak Freeze)
 router.post('/freeze-today', protect, async (req: AuthRequest, res: Response) => {
   const userId = req.user?.id;
-  const today = new Date();
-  const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+  const todayStr = getTodayStr();
 
   try {
     const activeChallenge: any = await ActiveChallenge.findOne({ userId, status: 'active' });
@@ -160,11 +160,6 @@ router.post('/freeze-today', protect, async (req: AuthRequest, res: Response) =>
 });
 
 import DailyLog from '../models/DailyLog';
-
-const getTodayStr = () => {
-  const today = new Date();
-  return today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
-};
 
 // @route   POST /api/challenges/cancel
 // @desc    Cancel current active challenge
