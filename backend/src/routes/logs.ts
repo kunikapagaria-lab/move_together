@@ -137,11 +137,12 @@ router.get('/streak/:challengeId', protect, async (req: AuthRequest, res: Respon
       // can carry stale ids from before tasks were customized down, which
       // previously inflated the count past the current required total.
       const completedCount = taskIds ? rawCompleted.filter(id => taskIds!.includes(id)).length : rawCompleted.length;
-      if (completedCount >= requiredTasks) {
+      if (completedCount >= requiredTasks || frozenDates.includes(logs[i]?.date)) {
+        // Fully completed, or a Streak-Freeze-protected day - a freeze keeps the
+        // streak climbing through that day, same as actually completing it.
         streak++;
-      } else if (logs[i]?.date === todayStr || frozenDates.includes(logs[i]?.date)) {
-        // Today (not over yet) or a Streak-Freeze-protected day - don't break
-        // the streak over it, but don't count it as a completed day either.
+      } else if (logs[i]?.date === todayStr) {
+        // Today isn't over yet - don't break the streak, but don't count it either.
         continue;
       } else {
         break;

@@ -132,11 +132,12 @@ router.get('/my-groups', protect, async (req: AuthRequest, res: Response) => {
 
         for (let i = 0; i < logs.length; i++) {
           const validCompletedCount = (logs[i].completedTaskIds || []).filter((id: string) => memberTaskIds.includes(id)).length;
-          if (validCompletedCount >= totalTasks) {
+          if (validCompletedCount >= totalTasks || frozenDates.includes(logs[i].date)) {
+            // Fully completed, or a Streak-Freeze-protected day - a freeze keeps
+            // the streak climbing through that day, same as actually completing it.
             streak++;
-          } else if (logs[i].date === todayStr || frozenDates.includes(logs[i].date)) {
-            // Today (not over yet) or a Streak-Freeze-protected day - don't break
-            // the streak over it, but don't count it as a completed day either.
+          } else if (logs[i].date === todayStr) {
+            // Today isn't over yet - don't break the streak, but don't count it either.
             continue;
           } else {
             break;
