@@ -116,11 +116,15 @@ router.get('/streak/:challengeId', protect, async (req: AuthRequest, res: Respon
 
     let requiredTasks = 8;
     let taskIds: string[] | null = null;
+    let frozenDates: string[] = [];
     if (mongoose.Types.ObjectId.isValid(challengeId)) {
       const challenge = await ActiveChallenge.findById(challengeId);
       if (challenge && challenge.tasks) {
         requiredTasks = (challenge.tasks as any).length;
         taskIds = (challenge.tasks as any[]).map(t => t.id);
+      }
+      if (challenge) {
+        frozenDates = (challenge as any).frozenDates || [];
       }
     }
 
@@ -135,7 +139,9 @@ router.get('/streak/:challengeId', protect, async (req: AuthRequest, res: Respon
       const completedCount = taskIds ? rawCompleted.filter(id => taskIds!.includes(id)).length : rawCompleted.length;
       if (completedCount >= requiredTasks) {
         streak++;
-      } else if (logs[i]?.date === todayStr) {
+      } else if (logs[i]?.date === todayStr || frozenDates.includes(logs[i]?.date)) {
+        // Today (not over yet) or a Streak-Freeze-protected day - don't break
+        // the streak over it, but don't count it as a completed day either.
         continue;
       } else {
         break;

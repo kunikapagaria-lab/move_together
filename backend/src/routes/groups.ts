@@ -121,6 +121,7 @@ router.get('/my-groups', protect, async (req: AuthRequest, res: Response) => {
         const memberTasks = activeCh.tasks || [];
         const totalTasks = memberTasks.length > 0 ? memberTasks.length : 8;
         const memberTaskIds = memberTasks.map((t: any) => t.id);
+        const frozenDates: string[] = (activeCh as any).frozenDates || [];
 
         // Only count completions that match a task actually on the member's
         // current list - a log can carry stale ids from before they customized
@@ -133,7 +134,9 @@ router.get('/my-groups', protect, async (req: AuthRequest, res: Response) => {
           const validCompletedCount = (logs[i].completedTaskIds || []).filter((id: string) => memberTaskIds.includes(id)).length;
           if (validCompletedCount >= totalTasks) {
             streak++;
-          } else if (logs[i].date === todayStr) {
+          } else if (logs[i].date === todayStr || frozenDates.includes(logs[i].date)) {
+            // Today (not over yet) or a Streak-Freeze-protected day - don't break
+            // the streak over it, but don't count it as a completed day either.
             continue;
           } else {
             break;
