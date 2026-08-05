@@ -1,11 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Plus, Trash2, Info, Moon, ChevronDown } from 'lucide-react';
+import { Trash2, Info, Moon } from 'lucide-react';
 import type { RootState, AppDispatch } from '../../store';
 import { setDayFocus, removeSplitExercise, updateSplitExercise, DAYS, type Day } from '../../store/routineSlice';
-import { loadExercises, exerciseImageUrl, FOCUS_LABEL, FOCUS_ORDER, FOCUS_COLOR, type Exercise } from './exerciseLibrary';
+import { loadExercises, FOCUS_LABEL, FOCUS_ORDER, FOCUS_COLOR, type Exercise } from './exerciseLibrary';
 import { ExerciseLibraryModal } from './ExerciseLibraryModal';
 import { ExerciseDetailModal } from './ExerciseDetailModal';
+
+// Sunday=0..Saturday=6 in JS -> reindex so Monday is first, matching DAYS.
+const getTodayName = (): Day => {
+  const jsDay = new Date().getDay();
+  return DAYS[jsDay === 0 ? 6 : jsDay - 1];
+};
 
 export const WorkoutSplitBoard = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -18,6 +24,8 @@ export const WorkoutSplitBoard = () => {
   const [editingCell, setEditingCell] = useState<{ day: Day; exerciseCellId: string } | null>(null);
   const [editSets, setEditSets] = useState(3);
   const [editReps, setEditReps] = useState('8-12');
+
+  const todayName = getTodayName();
 
   useEffect(() => {
     loadExercises().then(setExercises).catch(() => {});
@@ -38,147 +46,129 @@ export const WorkoutSplitBoard = () => {
   };
 
   return (
-    <div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-3 sm:gap-4 w-full">
+    <div className="font-sans">
+      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-x-7 gap-y-10 w-full">
         {DAYS.map(day => {
           const entry = workoutSplit.find(d => d.day === day);
           const focus = entry?.focus ?? null;
           const isRest = focus === 'rest';
           const focusColor = focus ? FOCUS_COLOR[focus] : undefined;
+          const isToday = day === todayName;
 
           return (
-            <div
-              key={day}
-              className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl p-3 sm:p-4 flex flex-col justify-between min-h-[400px] shadow-xl transition-all hover:bg-white/[0.13]"
-            >
-              <div>
-                <div className="bg-white/20 backdrop-blur-md border border-white/20 rounded-2xl p-3 text-center mb-3 shadow-sm">
-                  <div className="text-white font-black text-sm uppercase tracking-wider mb-2">{day}</div>
-                  <div className="relative inline-block">
+            <div key={day} className="flex flex-col min-w-0">
+              <div className={`flex items-baseline gap-2 pb-3 mb-4 border-b ${isToday ? 'border-amber-400/50' : 'border-white/10'}`}>
+                <span className="text-lg text-white">{day.slice(0, 3)}</span>
+                {isToday && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" title="Today" />}
+              </div>
+
+              <div className="relative mb-3.5">
+                <button
+                  type="button"
+                  onClick={() => setFocusPickerDay(focusPickerDay === day ? null : day)}
+                  style={focus ? { color: focusColor } : undefined}
+                  className="text-sm font-semibold text-white/50 hover:text-white transition-colors cursor-pointer text-left"
+                >
+                  {focus ? FOCUS_LABEL[focus] : 'Set focus'}
+                </button>
+
+                {focusPickerDay === day && (
+                  <div className="absolute z-20 top-full mt-1.5 left-0 bg-black/95 border border-white/20 rounded-xl p-1.5 shadow-2xl w-36">
                     <button
                       type="button"
-                      onClick={() => setFocusPickerDay(focusPickerDay === day ? null : day)}
-                      style={focus ? { backgroundColor: `${focusColor}26`, borderColor: `${focusColor}80`, color: focusColor } : undefined}
-                      className={`flex items-center gap-1 text-[10px] font-bold uppercase px-2.5 py-1 rounded-full border cursor-pointer transition-colors ${
-                        !focus ? 'bg-white/10 border-white/25 text-white/50 hover:text-white' : ''
-                      }`}
+                      onClick={() => { dispatch(setDayFocus({ day, focus: null })); setFocusPickerDay(null); }}
+                      className="w-full text-left text-[11px] font-bold uppercase px-2.5 py-1.5 rounded-lg text-white/50 hover:bg-white/10 hover:text-white cursor-pointer"
                     >
-                      {focus ? FOCUS_LABEL[focus] : 'Set Focus'} <ChevronDown className="w-3 h-3" />
+                      Unset
                     </button>
-
-                    {focusPickerDay === day && (
-                      <div className="absolute z-20 top-full mt-1.5 left-1/2 -translate-x-1/2 bg-black/95 border border-white/20 rounded-xl p-1.5 shadow-2xl w-36">
-                        <button
-                          type="button"
-                          onClick={() => { dispatch(setDayFocus({ day, focus: null })); setFocusPickerDay(null); }}
-                          className="w-full text-left text-[10px] font-bold uppercase px-2.5 py-1.5 rounded-lg text-white/50 hover:bg-white/10 hover:text-white cursor-pointer"
-                        >
-                          Unset
-                        </button>
-                        {FOCUS_ORDER.map(f => (
-                          <button
-                            key={f}
-                            type="button"
-                            onClick={() => { dispatch(setDayFocus({ day, focus: f })); setFocusPickerDay(null); }}
-                            className="w-full flex items-center gap-2 text-left text-[10px] font-bold uppercase px-2.5 py-1.5 rounded-lg hover:bg-white/10 cursor-pointer"
-                            style={{ color: FOCUS_COLOR[f] }}
-                          >
-                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: FOCUS_COLOR[f] }} />
-                            {FOCUS_LABEL[f]}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {isRest ? (
-                  <div className="flex flex-col items-center justify-center text-center py-10 text-white/40">
-                    <Moon className="w-6 h-6 mb-2" />
-                    <p className="text-xs font-bold uppercase tracking-wide">Rest Day</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2.5">
-                    {(entry?.exercises || []).map(ex => {
-                      const isEditing = editingCell?.day === day && editingCell.exerciseCellId === ex.id;
-                      return (
-                        <div
-                          key={ex.id}
-                          className="bg-white/10 border border-white/20 rounded-2xl p-2.5 flex gap-2.5 items-center relative group"
-                        >
-                          <img
-                            src={exerciseImageUrl(ex.exerciseId)}
-                            alt={ex.exerciseName}
-                            loading="lazy"
-                            onError={e => { (e.target as HTMLImageElement).style.visibility = 'hidden'; }}
-                            className="w-10 h-10 rounded-lg object-cover shrink-0 bg-white/10"
-                          />
-                          <div className="min-w-0 flex-1 text-left">
-                            <p className="text-[11px] font-black text-white uppercase tracking-wide leading-tight truncate">{ex.exerciseName}</p>
-                            {isEditing ? (
-                              <div className="flex items-center gap-1 mt-1" onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) handleCommitEdit(); }}>
-                                <input
-                                  type="number"
-                                  min={1}
-                                  value={editSets}
-                                  onChange={e => setEditSets(Number(e.target.value) || 1)}
-                                  onKeyDown={e => e.key === 'Enter' && handleCommitEdit()}
-                                  autoFocus
-                                  className="w-9 bg-white/10 border border-white/20 rounded text-[10px] text-white text-center outline-none py-0.5"
-                                />
-                                <span className="text-white/40 text-[10px]">x</span>
-                                <input
-                                  type="text"
-                                  value={editReps}
-                                  onChange={e => setEditReps(e.target.value)}
-                                  onKeyDown={e => e.key === 'Enter' && handleCommitEdit()}
-                                  className="w-14 bg-white/10 border border-white/20 rounded text-[10px] text-white text-center outline-none py-0.5"
-                                />
-                              </div>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => handleStartEdit(day, ex.id, ex.sets, ex.reps)}
-                                className="text-[10px] text-white/60 hover:text-white mt-0.5 cursor-pointer"
-                              >
-                                {ex.sets} &times; {ex.reps}
-                              </button>
-                            )}
-                          </div>
-                          <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                            <button
-                              type="button"
-                              onClick={() => setDetailExerciseId(ex.exerciseId)}
-                              className="text-white/40 hover:text-white p-0.5 cursor-pointer"
-                              title="View details"
-                            >
-                              <Info className="w-3 h-3" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => dispatch(removeSplitExercise({ day, exerciseCellId: ex.id }))}
-                              className="text-white/40 hover:text-rose-400 p-0.5 cursor-pointer"
-                              title="Remove"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
+                    {FOCUS_ORDER.map(f => (
+                      <button
+                        key={f}
+                        type="button"
+                        onClick={() => { dispatch(setDayFocus({ day, focus: f })); setFocusPickerDay(null); }}
+                        className="w-full flex items-center gap-2 text-left text-[11px] font-bold uppercase px-2.5 py-1.5 rounded-lg hover:bg-white/10 cursor-pointer"
+                        style={{ color: FOCUS_COLOR[f] }}
+                      >
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: FOCUS_COLOR[f] }} />
+                        {FOCUS_LABEL[f]}
+                      </button>
+                    ))}
                   </div>
                 )}
               </div>
 
-              {!isRest && (
-                <div className="mt-3">
+              {isRest ? (
+                <p className="flex items-center gap-1.5 text-sm text-white/40 italic">
+                  <Moon className="w-3.5 h-3.5" /> Rest day
+                </p>
+              ) : (
+                <div className="flex flex-col gap-3 flex-1">
+                  {(entry?.exercises || []).map(ex => {
+                    const isEditing = editingCell?.day === day && editingCell.exerciseCellId === ex.id;
+                    return (
+                      <div key={ex.id} className="group relative">
+                        <p className="text-[15px] text-white leading-snug pr-10">{ex.exerciseName}</p>
+                        {isEditing ? (
+                          <div className="flex items-center gap-1.5 mt-1" onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) handleCommitEdit(); }}>
+                            <input
+                              type="number"
+                              min={1}
+                              value={editSets}
+                              onChange={e => setEditSets(Number(e.target.value) || 1)}
+                              onKeyDown={e => e.key === 'Enter' && handleCommitEdit()}
+                              autoFocus
+                              className="w-10 bg-white/10 border border-white/20 rounded text-xs text-white text-center outline-none py-0.5"
+                            />
+                            <span className="text-white/40 text-xs">&times;</span>
+                            <input
+                              type="text"
+                              value={editReps}
+                              onChange={e => setEditReps(e.target.value)}
+                              onKeyDown={e => e.key === 'Enter' && handleCommitEdit()}
+                              className="w-16 bg-white/10 border border-white/20 rounded text-xs text-white text-center outline-none py-0.5"
+                            />
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleStartEdit(day, ex.id, ex.sets, ex.reps)}
+                            className="text-[13px] text-white/40 hover:text-white/70 mt-0.5 cursor-pointer"
+                          >
+                            {ex.sets} &times; {ex.reps}
+                          </button>
+                        )}
+                        <div className="absolute top-0 right-0 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={() => setDetailExerciseId(ex.exerciseId)}
+                            className="text-white/40 hover:text-white cursor-pointer"
+                            title="View details"
+                          >
+                            <Info className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => dispatch(removeSplitExercise({ day, exerciseCellId: ex.id }))}
+                            className="text-white/40 hover:text-rose-400 cursor-pointer"
+                            title="Remove"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {(entry?.exercises || []).length === 0 && (
+                    <p className="text-sm text-white/40">Nothing yet</p>
+                  )}
+
                   <button
                     type="button"
                     onClick={() => setLibraryDay(day)}
-                    className="w-full py-2.5 border border-dashed border-white/30 rounded-2xl flex items-center justify-center gap-1 text-white/50 hover:text-white hover:border-white/60 hover:bg-white/10 transition-all text-xs font-bold group cursor-pointer"
+                    className="mt-1 text-sm font-semibold text-white/40 hover:text-amber-400 underline decoration-transparent hover:decoration-amber-400 underline-offset-4 transition-colors cursor-pointer text-left"
                   >
-                    <Plus className="w-4 h-4 text-white/50 group-hover:text-white group-hover:scale-110 transition-transform" />
-                    <span className="text-[11px]">Add Exercise</span>
+                    + Add
                   </button>
                 </div>
               )}
