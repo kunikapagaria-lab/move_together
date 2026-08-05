@@ -14,6 +14,7 @@ import groupRoutes from './routes/groups';
 import friendRoutes from './routes/friends';
 import notificationRoutes from './routes/notifications';
 import integrationRoutes from './routes/integrations';
+import routineRoutes from './routes/routine';
 import { startCronJobs } from './cron/midnightReset';
 import { corsOptions } from './config/cors';
 import { authLimiter } from './middleware/rateLimiter';
@@ -60,6 +61,7 @@ app.use('/api/groups', groupRoutes);
 app.use('/api/friends', friendRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/integrations', integrationRoutes);
+app.use('/api/routine', routineRoutes);
 
 // Basic Health Check Route
 app.get('/api/health', (req, res) => {

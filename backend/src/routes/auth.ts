@@ -8,6 +8,7 @@ const router = express.Router();
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ALLOWED_AVATARS = ['🏃', '🔥', '⚡', '🏆', '🌱', '👑', '🥊', '🚴'];
+const ALLOWED_FITNESS_LEVELS = ['beginner', 'intermediate', 'advanced'];
 
 // Generate JWT
 const generateToken = (id: string) => {
@@ -69,6 +70,7 @@ router.post('/register', async (req, res) => {
         displayName: user.displayName,
         email: user.email,
         avatar: user.avatar,
+        fitnessLevel: user.fitnessLevel,
         token: generateToken(user._id.toString()),
       });
     } else {
@@ -93,6 +95,7 @@ router.post('/register', async (req, res) => {
           displayName: fallbackUser.displayName,
           email: fallbackUser.email,
           avatar: fallbackUser.avatar,
+          fitnessLevel: fallbackUser.fitnessLevel,
           token: generateToken(fallbackUser._id.toString()),
         });
       } catch (retryErr: any) {
@@ -124,6 +127,7 @@ router.post('/login', async (req, res) => {
         displayName: user.displayName,
         email: user.email,
         avatar: user.avatar,
+        fitnessLevel: user.fitnessLevel,
         token: generateToken(user._id.toString()),
       });
     } else {
@@ -189,6 +193,28 @@ router.put('/update-avatar', protect, async (req: AuthRequest, res) => {
   } catch (error) {
     console.error('Update avatar error:', error);
     res.status(500).json({ error: 'Server error updating avatar' });
+  }
+});
+
+// @route   PUT /api/auth/update-fitness-level
+// @desc    Update the logged-in user's fitness level (drives workout recommendations)
+router.put('/update-fitness-level', protect, async (req: AuthRequest, res) => {
+  const userId = req.user?.id;
+  const { fitnessLevel } = req.body;
+
+  if (!ALLOWED_FITNESS_LEVELS.includes(fitnessLevel)) {
+    return res.status(400).json({ error: 'Invalid fitness level selection' });
+  }
+
+  try {
+    const user = await User.findByIdAndUpdate(userId, { fitnessLevel }, { new: true });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json({ fitnessLevel: user.fitnessLevel });
+  } catch (error) {
+    console.error('Update fitness level error:', error);
+    res.status(500).json({ error: 'Server error updating fitness level' });
   }
 });
 

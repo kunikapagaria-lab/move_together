@@ -1,19 +1,65 @@
-import { useState, useRef } from 'react';
-import { Plus, Trash2, Calendar, GripVertical } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Plus, Trash2, Calendar, GripVertical, CalendarDays, Dumbbell } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '../../store';
-import { setCell, moveCell, deleteCell, type TimetableCell } from '../../store/routineSlice';
+import { setCell, moveCell, deleteCell, bootstrapRoutine, saveRoutine, type TimetableCell } from '../../store/routineSlice';
 import { BackButton } from '../../components/ui/BackButton';
 import { useToast } from '../../components/ui/Toast';
+import { WorkoutSplitBoard } from './WorkoutSplitBoard';
 
 const DAYS: TimetableCell['day'][] = [
   'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
 ];
 
+type RoutineMode = 'schedule' | 'split';
+
 export const Routine = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { showSuccess } = useToast();
-  const { cells } = useSelector((state: RootState) => state.routine);
+  const { showSuccess, showError } = useToast();
+  const { user } = useSelector((state: RootState) => state.auth);
+  const { cells, timeRows, workoutSplit, hasLoadedOnce } = useSelector((state: RootState) => state.routine);
+
+  const [mode, setMode] = useState<RoutineMode>(() => {
+    const saved = localStorage.getItem('movetribe_routine_mode');
+    return saved === 'split' ? 'split' : 'schedule';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('movetribe_routine_mode', mode);
+  }, [mode]);
+
+  // Load this account's routine from the backend once (with a one-time local
+  // localStorage-to-backend migration baked into the thunk itself).
+  useEffect(() => {
+    if (user?._id) {
+      dispatch(bootstrapRoutine(user._id));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?._id]);
+
+  // Debounced autosave: fires on ANY change to cells/timeRows/workoutSplit,
+  // regardless of which mode or handler caused it - a single state-keyed effect
+  // covers every mutation path (present or future) instead of relying on each
+  // handler remembering to also dispatch a save.
+  const skipNextSaveRef = useRef(true);
+  useEffect(() => {
+    if (hasLoadedOnce) skipNextSaveRef.current = true;
+  }, [hasLoadedOnce]);
+
+  useEffect(() => {
+    if (!hasLoadedOnce) return;
+    if (skipNextSaveRef.current) {
+      skipNextSaveRef.current = false;
+      return;
+    }
+    const timer = setTimeout(() => {
+      dispatch(saveRoutine()).unwrap().catch((err: any) => {
+        showError(err?.message || 'Failed to sync your routine. Please check your connection.');
+      });
+    }, 800);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cells, timeRows, workoutSplit, hasLoadedOnce]);
 
   // Editing state: cellId or null
   const [editingCellId, setEditingCellId] = useState<string | null>(null);
@@ -130,19 +176,46 @@ export const Routine = () => {
           <div className="inline-flex items-center gap-2 bg-white/20 border border-white/20 px-3.5 py-1 rounded-full text-xs font-bold text-white mb-2">
             <Calendar className="w-3.5 h-3.5 text-white" /> Weekly Routine Planner
           </div>
-          <h1 
+          <h1
             style={{ fontFamily: "'Oswald', sans-serif" }}
             className="text-3xl sm:text-5xl font-black text-white uppercase tracking-tight"
           >
-            Weekly Routine Timetable
+            {mode === 'schedule' ? 'Weekly Routine Timetable' : 'Weekly Workout Split'}
           </h1>
           <p className="text-xs sm:text-sm text-white/80 mt-1 max-w-xl">
-            Click directly on any card to edit text. Drag and drop task blocks between days to re-arrange your weekly routine.
+            {mode === 'schedule'
+              ? 'Click directly on any card to edit text. Drag and drop task blocks between days to re-arrange your weekly routine.'
+              : 'Give each day a training focus, then fill it with real exercises - sets, reps, photos, and instructions included.'}
           </p>
+        </div>
+
+        {/* SCHEDULE / WORKOUT SPLIT TOGGLE */}
+        <div className="inline-flex items-center bg-white/10 border border-white/20 rounded-2xl p-1 shrink-0 self-start">
+          <button
+            type="button"
+            onClick={() => setMode('schedule')}
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wide transition-colors cursor-pointer ${
+              mode === 'schedule' ? 'bg-white text-black' : 'text-white/60 hover:text-white'
+            }`}
+          >
+            <CalendarDays className="w-3.5 h-3.5" /> Schedule
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode('split')}
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wide transition-colors cursor-pointer ${
+              mode === 'split' ? 'bg-white text-black' : 'text-white/60 hover:text-white'
+            }`}
+          >
+            <Dumbbell className="w-3.5 h-3.5" /> Workout Split
+          </button>
         </div>
       </div>
 
-      {/* CLEAN 7-DAY WEEKLY ROUTINE BOARD */}
+      {mode === 'split' ? (
+        <WorkoutSplitBoard />
+      ) : (
+      /* CLEAN 7-DAY WEEKLY ROUTINE BOARD */
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-3 sm:gap-4 w-full">
         {DAYS.map(day => {
           const dayCells = cells.filter(c => c.day === day);
@@ -279,6 +352,7 @@ export const Routine = () => {
           );
         })}
       </div>
+      )}
     </div>
   );
 };

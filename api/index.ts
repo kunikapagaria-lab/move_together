@@ -10,6 +10,7 @@ import groupRoutes from '../backend/src/routes/groups';
 import friendRoutes from '../backend/src/routes/friends';
 import notificationRoutes from '../backend/src/routes/notifications';
 import integrationRoutes from '../backend/src/routes/integrations';
+import routineRoutes from '../backend/src/routes/routine';
 import { corsOptions } from '../backend/src/config/cors';
 import { authLimiter } from '../backend/src/middleware/rateLimiter';
 
@@ -56,6 +57,7 @@ app.use('/api/groups', groupRoutes);
 app.use('/api/friends', friendRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/integrations', integrationRoutes);
+app.use('/api/routine', routineRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Vercel Serverless Backend Connected to MongoDB Atlas' });

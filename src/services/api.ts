@@ -59,6 +59,13 @@ export const api = {
       body: JSON.stringify({ avatar })
     });
   },
+  updateFitnessLevel: async (fitnessLevel: string) => {
+    return safeFetch(`${API_URL}/auth/update-fitness-level`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ fitnessLevel })
+    });
+  },
 
   // --- Challenges ---
   getActiveChallenge: async () => {
@@ -209,6 +216,18 @@ export const api = {
   },
   getMyFriends: async () => {
     return safeFetch(`${API_URL}/friends/mine`, { headers: getHeaders() });
+  },
+
+  // --- Routine ---
+  getRoutine: async () => {
+    return safeFetch(`${API_URL}/routine`, { headers: getHeaders() });
+  },
+  updateRoutine: async (cells: any[], timeRows: string[], workoutSplit: any[]) => {
+    return safeFetch(`${API_URL}/routine`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ cells, timeRows, workoutSplit })
+    });
   },
 
   // --- Wearables / Integrations ---

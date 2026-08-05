@@ -6,6 +6,7 @@ export interface User {
   displayName: string;
   email: string;
   avatar?: string;
+  fitnessLevel?: 'beginner' | 'intermediate' | 'advanced';
   token: string;
 }
 
@@ -63,9 +64,15 @@ export const authSlice = createSlice({
         state.user.avatar = action.payload;
         localStorage.setItem('user', JSON.stringify(state.user));
       }
+    },
+    setFitnessLevel: (state, action: PayloadAction<'beginner' | 'intermediate' | 'advanced'>) => {
+      if (state.user) {
+        state.user.fitnessLevel = action.payload;
+        localStorage.setItem('user', JSON.stringify(state.user));
+      }
     }
   },
 });
 
-export const { reset, loginStart, loginSuccess, loginFailure, logout, setAvatar } = authSlice.actions;
+export const { reset, loginStart, loginSuccess, loginFailure, logout, setAvatar, setFitnessLevel } = authSlice.actions;
 export default authSlice.reducer;
